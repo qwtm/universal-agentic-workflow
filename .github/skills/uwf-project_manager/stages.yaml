@@ -213,6 +213,9 @@ stages:
           dir: "{{cwd}}/tmp/state"
           pattern: "/open/.*\\.md$"
           label: "open issue files"
+        - type: run_script
+          cmd: "node .github/skills/uwf-local-tracking/issues.mjs list --status open | node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); process.exit(d.count > 0 ? 0 : 1);\""
+          label: "SQLite issues table has open records"
 
   - name: acceptance
     agent: uwf-core-acceptance
