@@ -15,7 +15,7 @@ The single entry-point orchestrator is `uwf-core-orchestrator`. It is bootstrapp
 ## Agent bundles
 Agents are defined as `{role}-{job}.agent.md` files grouped into two bundles plus the single core orchestrator.
 
-- **core** (`uwf-core-*`) — Generic agents usable by any orchestrator regardless of workflow type. Includes the single `uwf-core-orchestrator` entry point plus stage agents for acceptance, ADRs, discovery, requirements, retro, security planning, technical writing, test planning, and state tracking.
+- **core** (`uwf-core-*`) — Generic agents usable by any orchestrator regardless of workflow type. Includes the single `uwf-core-orchestrator` entry point plus stage agents for acceptance, ADRs, discovery, requirements, retro, security planning, technical writing, and test planning.
 - **issues** (`uwf-sw_dev-*`, `uwf-issue-*`) — Stage agents scoped to driving individual work items from intake through implementation, review, and acceptance. Used by the `uwf-sw_dev` persona.
 - **project** (`uwf-project_manager-*`) — Stage agents for macro-level work: scoping a new effort, building a roadmap, and scaffolding the backlog. Used by the `uwf-project_manager` persona.
 
@@ -23,14 +23,7 @@ All stage agents are coordinated by `uwf-core-orchestrator`, which loads a **per
 
 ## Orchestrator Automation Rule — Non-negotiable
 
-> **The orchestrator MUST use `runSubagent` for every stage. Narrating or simulating execution is a hard violation.**
->
-> - Every stage MUST be executed by calling the `runSubagent` tool. Writing text that describes, simulates, or summarizes having run a stage — without calling the tool — is **forbidden**. If the tool was not called, the stage did not run.
-> - Only use subagent names that exist in the persona skill's Subagent Roster and the orchestrator's `agents:` frontmatter. **Never invent agent names.**
-> - After every `runSubagent` returns and its gate passes, **immediately invoke the next stage subagent**. Do NOT stop, pause, yield to the user, summarize completed work, or wait for acknowledgement between stage transitions.
-> - The only permitted user-facing output between stages is a one-line trace (e.g. `[Stage N/Total] <stageName> → invoking <subagent>`), emitted immediately before calling `runSubagent`.
-> - The only permitted stops mid-workflow are: (a) permanent gate failure after retries, (b) a `vscode/askQuestions` call required for missing input, or (c) the workflow is fully complete.
-> - **Failure to call `runSubagent` and instead describing or simulating execution is a critical defect.**
+> All orchestration rules, the per-stage execution loop, gate enforcement, and the `runSubagent` contract are defined in `.github/skills/uwf-orchestration-engine/SKILL.md`. The orchestrator reads and follows that skill at startup.
 
 ## Skills are swappable behaviors
 Skills (`uwf-{name}/SKILL.md`) encapsulate discrete behaviors. Agents reference skills by name; swapping a skill changes the behavior without modifying the agent.
@@ -54,15 +47,4 @@ The process is fully automated with subagents and must not stop after each stage
 
 ## Must always
 
-**Subagents only** (never the orchestrator): After completing a stage, end your response with:
-```
-Current Stage/Phase: <stage/phase name>
-Recommended Next Stage/Phase: <next stage/phase name>
-```
-If the response is workflow-related but not a formal stage:
-```
-Last Stage/Phase: <stage/phase name>
-Recommended Next Stage/Phase: <next stage/phase name>
-```
-
-**Orchestrator only**: When a subagent's response contains a `Current Stage/Phase` / `Recommended Next Stage/Phase` block, treat it as an internal hand-off signal. **Do NOT echo it to the user. Do NOT stop. Immediately proceed to the next stage.** The orchestrator never emits these blocks — it emits only single-line progress traces between stages.
+**Subagents only** (never the orchestrator): After completing a stage, end your response with `Current Stage/Phase` / `Recommended Next Stage/Phase` blocks as defined in `.github/skills/uwf-orchestration-engine/SKILL.md`.

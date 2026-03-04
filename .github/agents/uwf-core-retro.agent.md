@@ -3,13 +3,11 @@ name: uwf-core-retro
 description: "Retrospective: workflow + implementation improvements."
 tools: ["agent", "todo", "search", "edit", "read", "execute"]
 user-invokable: false
-argument-hint: "role (required): artifact filename prefix; outputPath (default ./tmp/workflow-artifacts): base directory for stage artifacts."
 ---
 
-# Retro stage
+# Retro Stage
 
-## Outputs:
-Write `{outputPath}/{role}-retro.md` with the following sections:
+Produce `{outputPath}/{role}-retro.md` with:
 - What worked
-- What didn’t
+- What didn't
 - Concrete improvements (workflow assets, tests, docs)

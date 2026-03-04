@@ -3,7 +3,6 @@ name: uwf-core-test-planner
 description: "Issue Mode: define what tests must be written before implementation begins. Produces {outputPath}/{role}-test-plan.md. No coding — stubs/signatures only."
 tools: ["agent", "todo", "search", "edit", "read", "execute"]
 user-invokable: false
-argument-hint: "role (required): artifact filename prefix; outputPath (default ./tmp/workflow-artifacts): base directory for stage artifacts."
 ---
 
 # Test Planning Stage
