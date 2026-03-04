@@ -18,5 +18,5 @@ argument-hint: "role (required): artifact filename prefix; outputPath (default .
 
 # ADR Stage
 - Create `{adrPath}/ADR-####-<slug>.md` for each major decision.
-- For high-impact decisions, invoke or follow the 'uwf-adr-300' skill checklist.
+- For high-impact decisions, invoke or follow the 'uwf-adr' skill checklist.
 - Each ADR must include: context, decision, alternatives, consequences, security/ops notes, verification.

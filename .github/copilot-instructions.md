@@ -45,7 +45,7 @@ The process is fully automated with subagents and must not stop after each stage
 
 **Other swappable skills:**
 - Default tracking behavior: `uwf-local-tracking` may be overridden by user input.
-- To use a different ADR format: substitute an alternative to `uwf-adr-300`.
+- To use a different ADR format: substitute an alternative to `uwf-adr`.
 
 ## Security baseline
 - No secrets in repo. If credentials appear, stop and recommend secure storage.
