@@ -10,7 +10,6 @@ tools:
 user-invokable: true
 argument-hint: "workflow (required): name of the persona skill to load (e.g. project_manager, sw_dev, book_writer)"
 agents:
-  - uwf-core-project-tracking
   - uwf-core-discovery
   - uwf-core-requirements
   - uwf-core-adr
