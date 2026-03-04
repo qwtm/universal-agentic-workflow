@@ -17,6 +17,7 @@ stages:
     agent: uwf-core-project-tracking
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -28,6 +29,7 @@ stages:
     agent: uwf-project_manager-intake
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -67,6 +69,7 @@ stages:
     agent: uwf-core-discovery
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -78,6 +81,7 @@ stages:
     agent: uwf-core-requirements
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -89,6 +93,7 @@ stages:
     agent: uwf-core-adr
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     conditional: true
     condition:
@@ -106,6 +111,7 @@ stages:
     agent: uwf-core-security-plan
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     conditional: true
     condition:
@@ -125,6 +131,7 @@ stages:
     agent: uwf-core-test-planner
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -136,6 +143,7 @@ stages:
     agent: uwf-project_manager-timeline-planner
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -150,6 +158,7 @@ stages:
     agent: uwf-project_manager-reviewer
     max_retries: 3
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -165,6 +174,7 @@ stages:
     agent: uwf-core-project-tracking
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -177,6 +187,7 @@ stages:
     agent: uwf-core-acceptance
     max_retries: 2
     on_gate_failure: retry
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -188,6 +199,7 @@ stages:
     agent: uwf-core-project-tracking
     max_retries: 1
     on_gate_failure: abort
+    run_as_subagent: true
     gated: true
     gate:
       checks:
@@ -199,4 +211,5 @@ stages:
     agent: uwf-core-retro
     max_retries: 1
     on_gate_failure: skip
+    run_as_subagent: true
     gated: false

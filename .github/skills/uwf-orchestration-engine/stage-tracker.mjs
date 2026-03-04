@@ -141,12 +141,13 @@ try {
 function cmdListStages(db) {
   requireFlag("workflow", "list-stages");
   const { stages } = loadStagesYaml(workflow);
-  const list = stages.map(({ name, agent, max_retries, on_gate_failure, gated, conditional }) => ({
+  const list = stages.map(({ name, agent, max_retries, on_gate_failure, gated, conditional, run_as_subagent }) => ({
     name, agent,
     maxRetries: max_retries ?? 2,
     onGateFailure: on_gate_failure ?? "retry",
     gated: gated !== false,
     conditional: conditional === true,
+    runAsSubagent: run_as_subagent !== false,
   }));
   process.stdout.write(JSON.stringify(list, null, 2) + "\n");
   process.exit(0);
@@ -186,9 +187,9 @@ function cmdInit(db) {
     db.prepare(`DELETE FROM stage_runs WHERE workflow = ?`).run(workflow);
     // Seed a row per stage
     const insert = db.prepare(
-      `INSERT INTO stage_runs (workflow, stage, status, retry_count) VALUES (?, ?, 'pending', 0)`
+      `INSERT INTO stage_runs (workflow, stage, status, retry_count, run_as_subagent) VALUES (?, ?, 'pending', 0, ?)`
     );
-    for (const s of stages) insert.run(workflow, s.name);
+    for (const s of stages) insert.run(workflow, s.name, s.run_as_subagent !== false ? 1 : 0);
     // Log history
     appendHistory(db, workflow, "*", null, "pending", "Workflow initialized");
   })();
@@ -333,8 +334,11 @@ function readState(db) {
 function ensureRow(db, stageName) {
   const exists = db.prepare(`SELECT id FROM stage_runs WHERE workflow = ? AND stage = ?`).get(workflow, stageName);
   if (!exists) {
-    db.prepare(`INSERT INTO stage_runs (workflow, stage, status, retry_count) VALUES (?, ?, 'pending', 0)`)
-      .run(workflow, stageName);
+    const { stages } = loadStagesYaml(workflow);
+    const stageDef = stages.find((s) => s.name === stageName);
+    const runAsSubagent = stageDef ? (stageDef.run_as_subagent !== false ? 1 : 0) : 1;
+    db.prepare(`INSERT INTO stage_runs (workflow, stage, status, retry_count, run_as_subagent) VALUES (?, ?, 'pending', 0, ?)`)
+      .run(workflow, stageName, runAsSubagent);
   }
 }
 
