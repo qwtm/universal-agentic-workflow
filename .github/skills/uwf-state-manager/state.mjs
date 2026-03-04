@@ -36,7 +36,7 @@
 
 import Database from "better-sqlite3";
 import { execSync } from "node:child_process";
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, existsSync, statSync, unlinkSync } from "node:fs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
@@ -169,6 +169,7 @@ try {
     case "set-status":    cmdSetStatus(db); break;
     case "sync":          cmdSync(db); break;
     case "note":          cmdNote(db); break;
+    case "reset":         cmdReset(db); break;
     default:
       usageError(`Unknown command: "${command}"`);
   }
@@ -387,8 +388,11 @@ function cmdNote(db) {
   succeed({ procedure: "note", history_entry: entry, state: readState(db) });
 }
 
-// ---------------------------------------------------------------------------
-// File-system helpers
+function cmdReset(db) {
+  db.close();
+  unlinkSync(DB_PATH);
+  succeed({ procedure: "reset", deleted: DB_PATH });
+}
 // ---------------------------------------------------------------------------
 
 function fileNonEmpty(filePath) {

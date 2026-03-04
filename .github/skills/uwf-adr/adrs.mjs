@@ -29,7 +29,7 @@
 
 import Database from "better-sqlite3";
 import yaml from "js-yaml";
-import { readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -315,6 +315,12 @@ db.pragma("foreign_keys = ON");
 
 initTable(db);
 
+function cmdReset(db) {
+  db.close();
+  unlinkSync(DB_PATH);
+  succeed({ procedure: "reset", deleted: DB_PATH });
+}
+
 switch (command) {
   case "create":    cmdCreate(db);    break;
   case "update":    cmdUpdate(db);    break;
@@ -322,6 +328,7 @@ switch (command) {
   case "list":      cmdList(db);      break;
   case "supersede": cmdSupersede(db); break;
   case "deprecate": cmdDeprecate(db); break;
+  case "reset":     cmdReset(db);     break;
   default:
-    usageError(`Unknown command: "${command}". Expected: create | update | get | list | supersede | deprecate`);
+    usageError(`Unknown command: "${command}". Expected: create | update | get | list | supersede | deprecate | reset`);
 }

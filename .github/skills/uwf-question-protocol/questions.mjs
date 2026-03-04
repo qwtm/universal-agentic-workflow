@@ -28,7 +28,7 @@
 
 import Database from "better-sqlite3";
 import yaml from "js-yaml";
-import { readFileSync } from "node:fs";
+import { readFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -248,6 +248,12 @@ db.pragma("foreign_keys = ON");
 
 initTable(db);
 
+function cmdReset(db) {
+  db.close();
+  unlinkSync(DB_PATH);
+  succeed({ procedure: "reset", deleted: DB_PATH });
+}
+
 switch (command) {
   case "log":    cmdLog(db);    break;
   case "answer": cmdAnswer(db); break;
@@ -255,6 +261,7 @@ switch (command) {
   case "list":   cmdList(db);   break;
   case "check":  cmdCheck(db);  break;
   case "clear":  cmdClear(db);  break;
+  case "reset":  cmdReset(db);  break;
   default:
-    usageError(`Unknown command: "${command}". Expected: log | answer | skip | list | check | clear`);
+    usageError(`Unknown command: "${command}". Expected: log | answer | skip | list | check | clear | reset`);
 }

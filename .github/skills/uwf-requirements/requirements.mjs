@@ -33,7 +33,7 @@
 
 import Database from "better-sqlite3";
 import yaml from "js-yaml";
-import { readFileSync } from "node:fs";
+import { readFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -285,6 +285,12 @@ db.pragma("foreign_keys = ON");
 
 initTable(db);
 
+function cmdReset(db) {
+  db.close();
+  unlinkSync(DB_PATH);
+  succeed({ procedure: "reset", deleted: DB_PATH });
+}
+
 switch (command) {
   case "add":    cmdAdd(db);                        break;
   case "update": cmdUpdate(db);                     break;
@@ -293,8 +299,9 @@ switch (command) {
   case "accept": cmdSetStatus(db, "accepted", "accept"); break;
   case "defer":  cmdSetStatus(db, "deferred", "defer");  break;
   case "reject": cmdSetStatus(db, "rejected", "reject"); break;
+  case "reset":  cmdReset(db); break;
   default:
     usageError(
-      `Unknown command: "${command}". Expected: add | update | get | list | accept | defer | reject`
+      `Unknown command: "${command}". Expected: add | update | get | list | accept | defer | reject | reset`
     );
 }

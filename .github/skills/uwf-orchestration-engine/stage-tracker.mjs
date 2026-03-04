@@ -32,7 +32,7 @@
  */
 
 import Database from "better-sqlite3";
-import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, statSync, readdirSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { resolve, join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -116,6 +116,10 @@ function resolveTemplates(str) {
 // ---------------------------------------------------------------------------
 
 try {
+  if (command === "reset") {
+    if (existsSync(DB_PATH)) unlinkSync(DB_PATH);
+    succeed({ procedure: "reset", deleted: DB_PATH });
+  }
   const db = openDb();
   switch (command) {
     case "list-stages":    cmdListStages(db); break;
@@ -126,6 +130,7 @@ try {
     case "stage-complete": cmdStageUpdate(db, "passed");    break;
     case "stage-fail":     cmdStageFail(db);               break;
     case "stage-skip":     cmdStageUpdate(db, "skipped");  break;
+    case "reset":          cmdReset(db);                    break;
     default: usageError(`Unknown command: "${command}"`);
   }
 } catch (err) {
