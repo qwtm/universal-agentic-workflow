@@ -5,7 +5,7 @@
  * The orchestrator agent invokes a persona run.mjs via terminal:
  *
  *   node .github/skills/uwf-<name>/run.mjs --list-stages
- *   node .github/skills/uwf-<name>/run.mjs --check-gate <stageName> [--output-path <path>] [--state-path <path>]
+ *   node .github/skills/uwf-<name>/run.mjs --check-gate <stageName> [--output-path <path>]
  *
  * Exit codes:
  *   0  gate passed (or --list-stages succeeded)
@@ -148,7 +148,7 @@ export function runCLI(stages) {
     process.exit(0);
   }
 
-  // --check-gate <stageName> [--output-path <path>] [--state-path <path>]
+  // --check-gate <stageName> [--output-path <path>]
   const gateIdx = args.indexOf("--check-gate");
   if (gateIdx !== -1) {
     const stageName = args[gateIdx + 1];
@@ -158,7 +158,6 @@ export function runCLI(stages) {
     }
 
     const outputPath = argValue(args, "--output-path") ?? "./tmp/workflow-artifacts";
-    const statePath = argValue(args, "--state-path") ?? "./tmp/uwf-state.json";
 
     const stage = stages.find((s) => s.name === stageName);
     if (!stage) {
@@ -167,7 +166,7 @@ export function runCLI(stages) {
       process.exit(2);
     }
 
-    const result = stage.gate(outputPath, statePath);
+    const result = stage.gate(outputPath);
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
     process.exit(result.passed ? 0 : 1);
   }
@@ -175,7 +174,7 @@ export function runCLI(stages) {
   process.stderr.write(
     "Usage:\n" +
       "  node run.mjs --list-stages\n" +
-      "  node run.mjs --check-gate <stageName> [--output-path <path>] [--state-path <path>]\n"
+      "  node run.mjs --check-gate <stageName> [--output-path <path>]\n"
   );
   process.exit(2);
 }

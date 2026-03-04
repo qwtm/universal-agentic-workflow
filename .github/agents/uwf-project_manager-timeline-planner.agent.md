@@ -38,65 +38,27 @@ Outputs are declared in `stages.yaml` and resolved by the orchestrator. Write to
 
 ---
 
-## Required: Seed the State Tree and SQLite
+## Required: Seed SQLite
 
-After writing `issues-backlog.md` and `project-roadmap.md`, you MUST call the local-tracking skill CLIs to register every issue. Do not skip this — the next stage gate verifies SQLite and the file-system state tree.
+After writing `issues-backlog.md` and `project-roadmap.md`, you MUST call `issues.mjs create` for every issue. The next stage gate verifies SQLite has open records.
 
-### Step 1 — Scaffold milestone/sprint directories
-
-For each milestone+sprint combination in the backlog, call `scaffold.mjs` once:
-
-```sh
-node .github/skills/uwf-local-tracking/scaffold.mjs --milestone <M-id> --sprint <S-id>
-```
-
-Expected output: `{ "dirs": ["tmp/state/M1-.../S1-.../open", ...] }`
-
-### Step 2 — Create issue files
-
-For every issue in the backlog call `new-issue.mjs`:
-
-```sh
-node .github/skills/uwf-local-tracking/new-issue.mjs \
-  --milestone <M-id> \
-  --sprint <S-id> \
-  --title "<issue title>" \
-  --id <I-NNN> \
-  --acceptance-criteria "<one-line AC>" \
-  [--depends-on "I-001,I-002"] \
-  [--security-sensitive true] \
-  [--notes "<context>"]
-```
-
-Expected output: `{ "created": "tmp/state/.../open/I-NNN.md", "id": "I-NNN", "title": "..." }`
-
-### Step 3 — Register each issue in SQLite
-
-For every issue, also call `issues.mjs create` to register it in the SQLite tracking DB:
+### Create each issue
 
 ```sh
 node .github/skills/uwf-local-tracking/issues.mjs create \
-  --id <I-NNN> \
-  --title "<issue title>" \
-  --milestone <M-id> \
-  --sprint <S-id> \
-  [--description "<brief description>"] \
+  --id <I-NNN> --title "<title>" \
+  --milestone <M-id> --sprint <S-id> \
+  --description "<brief description>" \
+  [--depends-on "<I-001,I-002>"] \
   [--risk "<risk note>"]
 ```
 
-### Step 4 — Verify
+IDs must be sequential (`I-001`, `I-002`, …) and match the backlog exactly. Every issue in `issues-backlog.md` must have a SQLite row.
 
-After seeding all issues, run the status check to confirm:
+### Verify
 
 ```sh
-node .github/skills/uwf-local-tracking/status.mjs
+node .github/skills/uwf-local-tracking/issues.mjs list --status open
 ```
 
-Confirm `totals.open > 0` in the output. If it is 0, something went wrong — re-run the failed steps before returning.
-
-### Rules
-
-- IDs must be sequential: `I-001`, `I-002`, … matching the backlog exactly.
-- Every issue in `issues-backlog.md` MUST have a corresponding file AND a SQLite record.
-- Do not create issues for milestones or sprints themselves — only for leaf-level work items.
-- `scaffold.mjs` creates directories only — call it before `new-issue.mjs` for the same milestone/sprint.
+Confirm `count > 0` before returning. If count is 0, re-run the failed create commands.

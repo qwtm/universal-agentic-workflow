@@ -20,7 +20,7 @@
  *   release-agent                          Release the agent token
  *   check-ready                            Mark ready_for_implementation
  *   set-status --status <s> --agent <id>   Set status (idle|active|blocked)
- *   sync                                   Derive fields from ./tmp/state/ tree
+ *   sync                                   Derive workflow status from issues.mjs list
  *   note --agent <id> --note <text>        Append a history entry
  *
  * Global options:
@@ -35,8 +35,9 @@
  */
 
 import Database from "better-sqlite3";
-import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
-import { resolve, join, dirname, relative, sep } from "node:path";
+import { execSync } from "node:child_process";
+import { readFileSync, existsSync, statSync } from "node:fs";
+import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
@@ -331,15 +332,23 @@ function cmdSetStatus(db) {
 }
 
 function cmdSync(db) {
+  const raw = execSync("node .github/skills/uwf-local-tracking/issues.mjs list", { encoding: "utf8" });
+  const { issues } = JSON.parse(raw);
+  const counts = { open: 0, active: 0, closed: 0 };
+  for (const iss of (issues ?? [])) {
+    if (iss.status === "open")        counts.open++;
+    else if (iss.status === "active") counts.active++;
+    else if (iss.status === "closed") counts.closed++;
+  }
+
   const state = readState(db);
-  const counts = countIssues("./tmp/state");
   const before = { status: state.status, phase: state.phase, ready_for_implementation: state.ready_for_implementation };
   let changed = false;
 
   db.transaction(() => {
     if (counts.active > 0) {
       if (state.status !== "active") { updateState(db, { status: "active" }); changed = true; }
-    } else if (counts.open === 0 && counts.active === 0) {
+    } else if (counts.open === 0 && counts.active === 0 && counts.closed > 0) {
       if (state.status !== "idle") { updateState(db, { status: "idle" }); changed = true; }
       if (state.phase === "execution") {
         updateState(db, { phase: "acceptance" });
@@ -353,7 +362,7 @@ function cmdSync(db) {
     const phaseIdx = PHASE_ORDER[state.phase ?? "idea"] ?? 0;
     const newReady = fileNonEmpty(intakePath) && fileNonEmpty(planPath) && phaseIdx >= PHASE_ORDER["planning"];
 
-    if (newReady !== state.ready_for_implementation) {
+    if (Boolean(newReady) !== Boolean(state.ready_for_implementation)) {
       updateState(db, { ready_for_implementation: newReady ? 1 : 0 });
       changed = true;
     }
@@ -386,34 +395,6 @@ function fileNonEmpty(filePath) {
   const abs = resolve(filePath);
   return existsSync(abs) && statSync(abs).size > 0;
 }
-
-/**
- * Count issues by state across the entire ./tmp/state/ tree.
- * Expects: tmp/state/<milestone>/<sprint>/open|active|closed/<id>.md
- */
-function countIssues(stateRoot) {
-  const abs = resolve(stateRoot);
-  const counts = { open: 0, active: 0, closed: 0 };
-  if (!existsSync(abs)) return counts;
-
-  for (const entry of walkDir(abs)) {
-    const parts = relative(abs, entry).split(sep);
-    const stateDir = parts[parts.length - 2];
-    if (stateDir === "open") counts.open++;
-    else if (stateDir === "active") counts.active++;
-    else if (stateDir === "closed") counts.closed++;
-  }
-  return counts;
-}
-
-function walkDir(dir) {
-  const results = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) results.push(...walkDir(full));
-    else results.push(full);
-  }
-  return results;
 }
 
 function artifactsForPhase(toPhase, artPath) {

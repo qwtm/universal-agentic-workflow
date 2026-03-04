@@ -1,9 +1,0 @@
-{
-  "phase": null,
-  "mode": null,
-  "status": "idle",
-  "current_agent": null,
-  "artifact_path": "./tmp/workflow-artifacts",
-  "ready_for_implementation": false,
-  "history": []
-}

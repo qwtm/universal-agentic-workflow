@@ -15,10 +15,15 @@
  *          [--description <text>]
  *          [--assigned-agent <id>]
  *          [--risk <text>] [--unknowns <text>]
+ *          [--depends-on <ids>]
+ *          [--parallel true|false]
  *          [--comments <text>]
- *   update --id <id> [field flags…]        Update fields on an existing issue
- *   list   [--status <s>] [--milestone <m>] [--sprint <s>]
- *   close  --id <id>                       Set issue status to "closed"
+ *   update   --id <id> [field flags…]          Update fields on an existing issue
+ *   list     [--status <s>] [--milestone <m>] [--sprint <s>]
+ *   close    --id <id>                         Set issue status to "closed"
+ *   activate --id <id>                         Set issue status to "active"
+ *   skip     --id <id> [--reason <text>]       Set issue status to "skipped"
+ *   next     [--milestone <m>] [--sprint <s>]  Find next eligible open issue(s)
  *
  * Exit codes:
  *   0  success
@@ -105,6 +110,12 @@ function buildCreateTable(tableName, columns) {
 function initTable(db) {
   const schema = yaml.load(readFileSync(SCHEMA_PATH, "utf8"));
   db.exec(buildCreateTable(schema.table, schema.columns));
+  // Migrate: add columns that may not exist in older DBs
+  for (const col of schema.columns) {
+    try {
+      db.exec(`ALTER TABLE "${schema.table}" ADD COLUMN ${col.name} ${col.type}${col.default !== undefined ? ` DEFAULT ${col.default}` : ""}`);
+    } catch { /* column already exists — ignore */ }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -124,8 +135,8 @@ function cmdCreate(db) {
   db.prepare(
     `INSERT INTO issues
        (id, title, status, phase, milestone, sprint, description,
-        assigned_agent, risk, unknowns, comments, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        assigned_agent, risk, unknowns, depends_on, parallel, comments, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     flags["title"],
@@ -137,6 +148,8 @@ function cmdCreate(db) {
     flags["assigned-agent"] ?? null,
     flags["risk"] ?? null,
     flags["unknowns"] ?? null,
+    flags["depends-on"] ?? null,
+    flags["parallel"] === "true" ? 1 : 0,
     flags["comments"] ?? null,
     now, now
   );
@@ -156,7 +169,8 @@ function cmdUpdate(db) {
     title: "title", status: "status", phase: "phase",
     milestone: "milestone", sprint: "sprint", description: "description",
     "assigned-agent": "assigned_agent", risk: "risk",
-    unknowns: "unknowns", comments: "comments",
+    unknowns: "unknowns", "depends-on": "depends_on",
+    parallel: "parallel", comments: "comments",
   };
 
   const updates = {};
@@ -201,6 +215,57 @@ function cmdClose(db) {
   succeed({ procedure: "close", issue: db.prepare("SELECT * FROM issues WHERE id = ?").get(id) });
 }
 
+function cmdActivate(db) {
+  requireFlag("id", "activate");
+  const id = flags["id"];
+  if (!db.prepare("SELECT id FROM issues WHERE id = ?").get(id)) fail(`Issue "${id}" not found.`);
+  db.prepare(`UPDATE issues SET status = 'active', updated_at = ? WHERE id = ?`).run(new Date().toISOString(), id);
+  succeed({ procedure: "activate", issue: db.prepare("SELECT * FROM issues WHERE id = ?").get(id) });
+}
+
+function cmdSkip(db) {
+  requireFlag("id", "skip");
+  const id = flags["id"];
+  if (!db.prepare("SELECT id FROM issues WHERE id = ?").get(id)) fail(`Issue "${id}" not found.`);
+  const comments = flags["reason"] ? `skip reason: ${flags["reason"]}` : "skipped";
+  db.prepare(`UPDATE issues SET status = 'skipped', comments = ?, updated_at = ? WHERE id = ?`).run(
+    comments, new Date().toISOString(), id
+  );
+  succeed({ procedure: "skip", issue: db.prepare("SELECT * FROM issues WHERE id = ?").get(id) });
+}
+
+function cmdNext(db) {
+  let query = "SELECT * FROM issues WHERE status = 'open'";
+  const params = [];
+  if (flags["milestone"]) { query += " AND milestone = ?"; params.push(flags["milestone"]); }
+  if (flags["sprint"])    { query += " AND sprint = ?";    params.push(flags["sprint"]); }
+  query += " ORDER BY created_at ASC";
+
+  const open = db.prepare(query).all(...params);
+  const activeIds = new Set(
+    db.prepare("SELECT id FROM issues WHERE status = 'active'").all().map((r) => r.id)
+  );
+
+  const eligible = [];
+  const blocked = [];
+
+  for (const issue of open) {
+    const deps = issue.depends_on ? issue.depends_on.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    const unmet = deps.filter((dep) => {
+      const dep_row = db.prepare("SELECT status FROM issues WHERE id = ?").get(dep);
+      return !dep_row || dep_row.status !== "closed";
+    });
+    if (unmet.length === 0) {
+      eligible.push(issue);
+    } else {
+      blocked.push({ id: issue.id, title: issue.title, waiting_on: unmet });
+    }
+  }
+
+  const exhausted = open.length === 0 && activeIds.size === 0;
+  succeed({ procedure: "next", exhausted, eligible, blocked });
+}
+
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
@@ -214,10 +279,13 @@ db.pragma("foreign_keys = ON");
 initTable(db);
 
 switch (command) {
-  case "create": cmdCreate(db); break;
-  case "update": cmdUpdate(db); break;
-  case "list":   cmdList(db);   break;
-  case "close":  cmdClose(db);  break;
+  case "create":   cmdCreate(db);   break;
+  case "update":   cmdUpdate(db);   break;
+  case "list":     cmdList(db);     break;
+  case "close":    cmdClose(db);    break;
+  case "activate": cmdActivate(db); break;
+  case "skip":     cmdSkip(db);     break;
+  case "next":     cmdNext(db);     break;
   default:
-    usageError(`Unknown command: "${command}". Expected: create | update | list | close`);
+    usageError(`Unknown command: "${command}". Expected: create | update | list | close | activate | skip | next`);
 }

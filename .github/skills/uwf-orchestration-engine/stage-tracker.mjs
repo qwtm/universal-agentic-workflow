@@ -22,7 +22,6 @@
  *
  * Global options:
  *   --output-path <path>   Default: ./tmp/workflow-artifacts
- *   --state-path  <path>   Default: ./tmp/uwf-state.json
  *
  * Exit codes:
  *   0  success (gate passed for check-gate)
@@ -57,7 +56,6 @@ const flags = parseFlags(rest);
 
 const workflow   = flags["workflow"];
 const outputPath = flags["output-path"] ?? "./tmp/workflow-artifacts";
-const statePath  = flags["state-path"]  ?? "./tmp/uwf-state.json";
 
 if (!command) usageError("No command provided.");
 
@@ -110,7 +108,6 @@ function resolveTemplates(str) {
   if (typeof str !== "string") return str;
   return str
     .replace(/\{\{output_path\}\}/g, outputPath)
-    .replace(/\{\{state_path\}\}/g,  statePath)
     .replace(/\{\{cwd\}\}/g,         process.cwd());
 }
 

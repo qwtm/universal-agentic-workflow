@@ -4,7 +4,6 @@
 #
 # Template variables available in paths:
 #   {{output_path}}  — resolved output-path (default: ./tmp/workflow-artifacts)
-#   {{state_path}}   — resolved state-path  (default: ./tmp/uwf-state.json)
 #   {{cwd}}          — process.cwd()
 #
 # inputs/outputs use the same template variables and support glob patterns.
@@ -21,8 +20,7 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
-    inputs:
-      - "{{state_path}}"
+    inputs: []
     outputs:
       - "{{output_path}}/issues-intake.md"
     gated: true

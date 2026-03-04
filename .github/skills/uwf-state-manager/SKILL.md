@@ -54,7 +54,7 @@ Agents must never write to the database directly. Call the script via terminal a
 | `release-agent` | Release the agent token |
 | `check-ready` | Verify prereqs and mark `ready_for_implementation` |
 | `set-status --status <s> --agent <id>` | Set status (`idle`\|`active`\|`blocked`) |
-| `sync` | Derive fields from `./tmp/state/` tree |
+| `sync` | Derive `status`/`phase` from `issues.mjs list` counts |
 | `note --agent <id> --note <text>` | Append a history entry |
 
 Global option: `--output-path <path>` (default `./tmp/workflow-artifacts`).

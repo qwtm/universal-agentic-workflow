@@ -30,6 +30,11 @@ columns:
     type: TEXT
   - name: unknowns
     type: TEXT
+  - name: depends_on
+    type: TEXT
+  - name: parallel
+    type: INTEGER
+    default: 0
   - name: comments
     type: TEXT
   - name: created_at

@@ -6,7 +6,7 @@
  *
  * Usage (called by the orchestrator agent via terminal):
  *   node .github/skills/uwf-<workflow>/run.mjs --list-stages
- *   node .github/skills/uwf-<workflow>/run.mjs --check-gate <stageName> [--output-path <path>] [--state-path <path>]
+ *   node .github/skills/uwf-<workflow>/run.mjs --check-gate <stageName> [--output-path <path>]
  *
  * Exit codes:  0 = gate passed   1 = gate failed   2 = usage error
  */
@@ -38,7 +38,7 @@ if (rawArgs.includes("--list-stages")) {
     if (!stageName) { process.stderr.write("Usage: --check-gate <stageName>\n"); process.exit(2); }
     trackerArgs = ["check-gate", ...baseArgs, "--stage", stageName];
   } else {
-    process.stderr.write("Usage: --list-stages | --check-gate <stageName> [--output-path <p>] [--state-path <p>]\n");
+    process.stderr.write("Usage: --list-stages | --check-gate <stageName> [--output-path <p>]\n");
     process.exit(2);
   }
 }
@@ -49,7 +49,7 @@ spawn(process.execPath, [tracker, ...trackerArgs], { stdio: "inherit" })
 function forwardGlobalFlags(args) {
   const out = [];
   for (let i = 0; i < args.length; i++) {
-    if ((args[i] === "--output-path" || args[i] === "--state-path") && i + 1 < args.length) {
+    if ((args[i] === "--output-path") && i + 1 < args.length) {
       out.push(args[i], args[++i]);
     }
   }
