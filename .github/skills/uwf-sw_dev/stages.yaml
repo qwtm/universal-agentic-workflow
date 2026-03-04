@@ -6,6 +6,9 @@
 #   {{output_path}}  — resolved output-path (default: ./tmp/workflow-artifacts)
 #   {{state_path}}   — resolved state-path  (default: ./tmp/uwf-state.json)
 #   {{cwd}}          — process.cwd()
+#
+# inputs/outputs use the same template variables and support glob patterns.
+# The orchestrator resolves these and passes them to the stage agent at invocation time.
 
 workflow: sw_dev
 artifact_prefix: issues
@@ -18,6 +21,9 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs: []
+    outputs:
+      - "{{state_path}}"
     gated: true
     gate:
       checks:
@@ -30,6 +36,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{state_path}}"
+    outputs:
+      - "{{output_path}}/issues-intake.md"
     gated: true
     gate:
       checks:
@@ -42,6 +52,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-intake.md"
+    outputs:
+      - "{{output_path}}/issues-discovery.md"
     gated: true
     gate:
       checks:
@@ -54,6 +68,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-discovery.md"
+    outputs:
+      - "{{output_path}}/issues-requirements.md"
     gated: true
     gate:
       checks:
@@ -66,6 +84,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-requirements.md"
+    outputs:
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
     gated: true
     conditional: true
     condition:
@@ -84,6 +106,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-requirements.md"
+    outputs:
+      - "{{output_path}}/issues-security-plan.md"
     gated: true
     conditional: true
     condition:
@@ -104,6 +130,13 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-intake.md"
+      - "{{output_path}}/issues-discovery.md"
+      - "{{output_path}}/issues-requirements.md"
+      - "{{output_path}}/issues-security-plan.md"
+    outputs:
+      - "{{output_path}}/issues-test-plan.md"
     gated: true
     gate:
       checks:
@@ -116,6 +149,15 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-intake.md"
+      - "{{output_path}}/issues-discovery.md"
+      - "{{output_path}}/issues-requirements.md"
+      - "{{output_path}}/issues-security-plan.md"
+      - "{{output_path}}/issues-test-plan.md"
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
+    outputs:
+      - "{{output_path}}/issues-plan.md"
     gated: true
     gate:
       checks:
@@ -128,6 +170,10 @@ stages:
     max_retries: 1
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-plan.md"
+      - "{{output_path}}/issues-test-plan.md"
+    outputs: []
     gated: true
     gate:
       checks:
@@ -140,6 +186,10 @@ stages:
     max_retries: 3
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-plan.md"
+    outputs:
+      - "{{output_path}}/issues-review.md"
     gated: true
     gate:
       checks:
@@ -156,6 +206,9 @@ stages:
     max_retries: 1
     on_gate_failure: abort
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-review.md"
+    outputs: []
     gated: false
 
   - name: acceptance
@@ -163,6 +216,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-review.md"
+    outputs:
+      - "{{output_path}}/issues-acceptance.md"
     gated: true
     gate:
       checks:
@@ -175,6 +232,9 @@ stages:
     max_retries: 1
     on_gate_failure: abort
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-acceptance.md"
+    outputs: []
     gated: true
     gate:
       checks:
@@ -187,4 +247,7 @@ stages:
     max_retries: 1
     on_gate_failure: skip
     run_as_subagent: true
+    inputs: []
+    outputs:
+      - "{{output_path}}/issues-retro.md"
     gated: false

@@ -7,14 +7,6 @@ user-invokable: false
 # Work Planning Stage
 This stage assembles the full implementation plan from already-completed upstream artifacts. Security and tests are already defined. Do not write code or source files. Do not re-scope the issue — that is Intake's job.
 
-## Inputs (all must exist before this stage begins)
-- `./tmp/workflow-artifacts/issues-intake.md` — issue goal, acceptance criteria, constraints, out-of-scope
-- `./tmp/workflow-artifacts/issues-discovery.md` — findings relevant to this issue
-- `./tmp/workflow-artifacts/issues-requirements.md` — functional + non-functional requirements (if produced)
-- `./tmp/workflow-artifacts/issues-security-plan.md` — security constraints and controls the implementation must satisfy
-- `./tmp/workflow-artifacts/issues-test-plan.md` — test stubs and coverage requirements the implementation must satisfy
-- Any relevant ADRs in `docs/adr/`
-
 ## Required output: `./tmp/workflow-artifacts/issues-plan.md` (reset and scoped to this issue)
 
 > **Order matters:** tests are written before feature code. The plan must reflect this.

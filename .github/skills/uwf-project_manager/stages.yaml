@@ -6,6 +6,9 @@
 #   {{output_path}}  — resolved output-path (default: ./tmp/workflow-artifacts)
 #   {{state_path}}   — resolved state-path  (default: ./tmp/uwf-state.json)
 #   {{cwd}}          — process.cwd()
+#
+# inputs/outputs use the same template variables and support glob patterns.
+# The orchestrator resolves these and passes them to the stage agent at invocation time.
 
 workflow: project_manager
 artifact_prefix: project
@@ -18,6 +21,9 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs: []
+    outputs:
+      - "{{state_path}}"
     gated: true
     gate:
       checks:
@@ -30,6 +36,9 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs: []
+    outputs:
+      - "{{output_path}}/project-intake.md"
     gated: true
     gate:
       checks:
@@ -70,6 +79,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-intake.md"
+    outputs:
+      - "{{output_path}}/project-discovery.md"
     gated: true
     gate:
       checks:
@@ -82,6 +95,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-discovery.md"
+    outputs:
+      - "{{output_path}}/project-requirements.md"
     gated: true
     gate:
       checks:
@@ -94,6 +111,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-requirements.md"
+    outputs:
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
     gated: true
     conditional: true
     condition:
@@ -112,6 +133,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-requirements.md"
+    outputs:
+      - "{{output_path}}/project-security-plan.md"
     gated: true
     conditional: true
     condition:
@@ -132,6 +157,13 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-intake.md"
+      - "{{output_path}}/project-discovery.md"
+      - "{{output_path}}/project-requirements.md"
+      - "{{output_path}}/project-security-plan.md"
+    outputs:
+      - "{{output_path}}/project-test-plan.md"
     gated: true
     gate:
       checks:
@@ -144,6 +176,12 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-intake.md"
+      - "{{output_path}}/project-discovery.md"
+    outputs:
+      - "{{output_path}}/issues-backlog.md"
+      - "{{output_path}}/project-roadmap.md"
     gated: true
     gate:
       checks:
@@ -159,6 +197,11 @@ stages:
     max_retries: 3
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-backlog.md"
+      - "{{output_path}}/project-roadmap.md"
+    outputs:
+      - "{{output_path}}/project-review.md"
     gated: true
     gate:
       checks:
@@ -175,6 +218,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-backlog.md"
+    outputs:
+      - "{{cwd}}/tmp/state/**/open/*.md"
     gated: true
     gate:
       checks:
@@ -188,6 +235,10 @@ stages:
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-review.md"
+    outputs:
+      - "{{output_path}}/project-acceptance.md"
     gated: true
     gate:
       checks:
@@ -200,6 +251,9 @@ stages:
     max_retries: 1
     on_gate_failure: abort
     run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-acceptance.md"
+    outputs: []
     gated: true
     gate:
       checks:
@@ -212,4 +266,7 @@ stages:
     max_retries: 1
     on_gate_failure: skip
     run_as_subagent: true
+    inputs: []
+    outputs:
+      - "{{output_path}}/project-retro.md"
     gated: false

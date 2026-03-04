@@ -22,12 +22,6 @@ As a test planner you must not write any implementation code. This is a strict r
 ## Rules
 Tests are defined **before** implementation. This stage produces the test contract that the implementer must satisfy. Do not write implementation code — only test stubs, signatures, and scenarios.  During project planning, focus on defining the test strategy, test cases, and stubs/signatures for all tests that must be implemented to satisfy the acceptance criteria and security controls. The implementer will write the actual test code during implementation.
 
-## Inputs
-- `{outputPath}/{role}-intake.md` — acceptance criteria (source of truth for what must be tested)
-- `{outputPath}/{role}-discovery.md` — existing test patterns, frameworks, coverage tooling
-- `{outputPath}/{role}-requirements.md` — functional + non-functional requirements (if produced)
-- `{outputPath}/{role}-security-plan.md` — security controls that require test coverage
-
 ## Required output: `{outputPath}/{role}-test-plan.md`
 
 ### Sections

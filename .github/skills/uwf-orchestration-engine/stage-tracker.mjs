@@ -141,13 +141,15 @@ try {
 function cmdListStages(db) {
   requireFlag("workflow", "list-stages");
   const { stages } = loadStagesYaml(workflow);
-  const list = stages.map(({ name, agent, max_retries, on_gate_failure, gated, conditional, run_as_subagent }) => ({
+  const list = stages.map(({ name, agent, max_retries, on_gate_failure, gated, conditional, run_as_subagent, inputs, outputs }) => ({
     name, agent,
     maxRetries: max_retries ?? 2,
     onGateFailure: on_gate_failure ?? "retry",
     gated: gated !== false,
     conditional: conditional === true,
     runAsSubagent: run_as_subagent !== false,
+    inputs: inputs ?? [],
+    outputs: outputs ?? [],
   }));
   process.stdout.write(JSON.stringify(list, null, 2) + "\n");
   process.exit(0);

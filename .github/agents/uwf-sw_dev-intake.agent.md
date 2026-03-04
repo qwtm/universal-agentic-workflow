@@ -6,9 +6,3 @@ user-invokable: false
 ---
 ## Goal
 Given a active and groomed issue, produce a scoped intake that captures the above information specific to this work item. This should be written to `tmp/workflow-artifacts/issues-intake.md` for the active issue. If any of the above information is missing, use the tools at your disposal to inspect the workspace and gather the necessary details. Do not make assumptions or fill in gaps with generic placeholders. Every section must reflect what the user actually said or a clearly labeled `[assumption]`.
-
-## Inputs
--  An active and groomed issued, if no issue is given or issue is not active return an error.
-
-## Outputs
-The intake comments/report should also summarise any automated recommendations made during the process (e.g. prompts to create or update backlog stubs, sprint placement advice, reordering suggestions).  Write the scoped intake to `tmp/workflow-artifacts/issues-intake.md` for the active issue.

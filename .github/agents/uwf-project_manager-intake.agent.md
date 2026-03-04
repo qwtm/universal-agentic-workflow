@@ -16,21 +16,6 @@ user-invokable: false
 ## Goal
 Given a new project proposal or concept, capture the user objective and intended work-breakdown strategy. Produce `./tmp/workflow-artifacts/project-intake.md` with the following sections:
 
-## Inputs
--  An idea in the form of a project proposal, concept, feature request, or other digital artifact.
-
-### Questions to ask if unable to infer from input (return to calling agent for answering and provide proposed answer):
-1. What is the primary goal of this project?
-2. What is explicitly out of scope?
-3. Who are the stakeholders and what is the target environment?
-4. What does success look like (measurable outcomes)?
-5. What level of work breakdown makes sense?
-   - **Milestones/Epics** — large deliverable phases (weeks–months)
-   - **Sprints** — time-boxed iterations (1–2 weeks)
-   - **Issues / User Stories** — individual shippable features or fixes
-   - **Tasks** — sub-steps within an issue (hours)
-   Choose the levels that fit the project size. Document the rationale.
-
 ### How to Request Missing Information
 
 If you cannot infer required fields from the input, use the `uwf-question-protocol`:

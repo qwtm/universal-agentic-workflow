@@ -32,10 +32,6 @@ These indicate an upstream failure. The intake stage is responsible for capturin
 
 ---
 
-## Inputs
-- `./tmp/workflow-artifacts/project-intake.md` — goal, non-goals, work-breakdown strategy
-- `./tmp/workflow-artifacts/project-discovery.md` — current state, constraints, unknowns
+## Outputs
 
-## Ouptuts
-1. `./tmp/workflow-artifacts/issues-backlog.md` — backlog of issues with title, one-line description, status, and linked dependencies. Used to by the `uwf-core-project-tracking` agent.
-2. `./tmp/workflow-artifacts/project-roadmap.md` — high-level project phases and milestonesan deliverables
+Outputs are declared in `stages.yaml` and resolved by the orchestrator. Write to each path in `{outputs}`.
