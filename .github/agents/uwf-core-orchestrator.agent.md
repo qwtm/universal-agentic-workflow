@@ -13,6 +13,7 @@ agents:
   - uwf-core-discovery
   - uwf-core-requirements
   - uwf-core-adr
+  - uwf-core-risk-planner
   - uwf-core-security-plan
   - uwf-core-test-planner
   - uwf-core-blueprint
