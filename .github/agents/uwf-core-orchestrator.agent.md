@@ -18,6 +18,7 @@ agents:
   - uwf-core-test-planner
   - uwf-core-blueprint
   - uwf-core-acceptance
+  - uwf-core-snapshot
   - uwf-core-retro
   - uwf-core-technical-writer
   - uwf-project_manager-intake

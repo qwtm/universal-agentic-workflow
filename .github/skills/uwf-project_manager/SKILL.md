@@ -31,6 +31,7 @@ Persona skill for macro-level project planning: scoping a new effort, producing 
 | `uwf-project_manager-timeline-planner` | Issues backlog and project roadmap |
 | `uwf-project_manager-reviewer` | Quality and security review of all planning artifacts |
 | `uwf-core-acceptance` | Final acceptance gate checks |
+| `uwf-core-snapshot` | Produce uwf-drs; close uwf-br layer 5; append changelog closure entry |
 | `uwf-core-retro` | Retrospective |
 
 ---
@@ -62,8 +63,9 @@ Execute stages **in this exact order**. Do not advance past a stage until its ga
 | 12a | `planning` | *(fix-loop — see engine skill)* | If reviewer returned fixes: re-invoke responsible subagent(s), then re-invoke reviewer. Max 3 review cycles. |
 | 13 | `planning` → `waiting-acceptance` | `uwf-core-project-tracking` | Track issues in project tracking. |
 | 14 | `waiting-acceptance` → `acceptance` | `uwf-core-acceptance` | Run final acceptance checks against all artifacts. |
-| 15 | `acceptance` → `closed` | `uwf-core-project-tracking` | Advance phase to `closed`; record completion. |
-| 16 | `closed` | `uwf-core-retro` | *(Optional)* Produce retrospective if requested or if issues were encountered. |
+| 15 | `acceptance` → `snapshot` | `uwf-core-snapshot` | Produce `project-drs.json`; close `project-br.json` layer 5; append closure entry to `uwf-changelog.md`. |
+| 16 | `snapshot` → `closed` | `uwf-core-project-tracking` | Advance phase to `closed`; record completion. |
+| 17 | `closed` | `uwf-core-retro` | *(Optional)* Produce retrospective if requested or if issues were encountered. |
 
 ---
 

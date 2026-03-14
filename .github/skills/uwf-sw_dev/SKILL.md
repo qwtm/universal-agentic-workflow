@@ -33,6 +33,7 @@ Persona skill for driving individual work items (issues) from intake through imp
 | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or clean bill |
 | `uwf-core-technical-writer` | Review and update documentation from changed artifacts |
 | `uwf-core-acceptance` | Run acceptance gate checklist |
+| `uwf-core-snapshot` | Produce uwf-drs; close uwf-br layer 5; append changelog closure entry |
 | `uwf-core-retro` | Retrospective |
 
 ---
@@ -59,8 +60,9 @@ Execute stages **in this exact order** for each active issue. Do not advance pas
 | 13 | `execution` | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or recommend acceptance. *(fix-loop — see engine skill)* |
 | 14 | `execution` → `acceptance` | `uwf-core-technical-writer` | Review and update `./tmp/workflow-artifacts/` documentation from new or changed artifacts. |
 | 15 | `acceptance` | `uwf-core-acceptance` | Run acceptance gate checklist; produce `issues-acceptance.md`. |
-| 16 | `acceptance` → `closed` | `uwf-core-project-tracking` | Execute close/skip transition for the issue. |
-| 17 | *(next issue or done)* | `uwf-core-project-tracking` | If queue has more open issues, return to step 0 for the next issue. If queue is empty, offer a retrospective. |
+| 16 | `acceptance` → `snapshot` | `uwf-core-snapshot` | Produce `issues-drs.json`; close `issues-br.json` layer 5; append closure entry to `uwf-changelog.md`. |
+| 17 | `snapshot` → `closed` | `uwf-core-project-tracking` | Execute close/skip transition for the issue. |
+| 18 | *(next issue or done)* | `uwf-core-project-tracking` | If queue has more open issues, return to step 0 for the next issue. If queue is empty, offer a retrospective. |
 
 ---
 

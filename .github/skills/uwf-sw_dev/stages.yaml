@@ -263,6 +263,29 @@ stages:
           text: "verdict: approved"
           label: "issues-acceptance.md"
 
+  - name: snapshot
+    agent: uwf-core-snapshot
+    max_retries: 2
+    on_gate_failure: retry
+    run_as_subagent: true
+    advances_phase_to: snapshot
+    inputs:
+      - "{{output_path}}/issues-acceptance.md"
+      - "{{output_path}}/issues-br.json"
+      - "{{output_path}}/issues-blueprint.md"
+    outputs:
+      - "{{output_path}}/issues-drs.json"
+    gated: true
+    gate:
+      checks:
+        - type: require_non_empty
+          path: "{{output_path}}/issues-drs.json"
+          label: "issues-drs.json"
+        - type: require_contains
+          path: "{{output_path}}/issues-drs.json"
+          text: "divergence_log"
+          label: "issues-drs.json divergence_log field present"
+
   - name: retro
     agent: uwf-core-retro
     max_retries: 1

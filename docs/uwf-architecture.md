@@ -66,6 +66,7 @@ Every workflow begins here regardless of archetype. The goal is situational awar
 | **Project Tracking** | `uwf-tracking.agent.md` | Populate the local tracking cache. Sync story status, update traceability matrix, append changelog. |
 | **Refinement** | `uwf-refinement.agent.md` | Groom unrefined stories to meet the quality standard (see Quality Controls below). Reject stories that fail completeness checks. |
 | **Acceptance** | `uwf-acceptance.agent.md` | Verify acceptance criteria are met. Run traceability audit: story → ADR → code → test. Flag gaps. |
+| **Snapshot** | `uwf-core-snapshot.agent.md` | Produce `uwf-drs` — the Deterministic Reconstruction Spec. Serialize accepted state with pinned versions, resolved dependency graph, executed build sequence, full ADR set, gap log, and divergence log. Close `uwf-br` layer 5 and append a closure entry to `uwf-changelog`. |
 | **Retro** | `uwf-retro.agent.md` | Post-mortem on the workflow execution. Capture what worked, what didn't, and improvement actions for future iterations. |
 
 ---
@@ -119,8 +120,9 @@ Stories entering Phase 3 must pass these checks:
 | Risk Register | `uwf-risk` | Planning | Markdown | `uwf-core-risk-planner` agent | Project-level risk register: schedule, dependency, technical-debt, and external risks. Appended to uwf-br layer 1. Blocking dependency risks also flagged in layer 2. Feeds `slippage_risk_signal` on user stories. |
 | Sprint / Roadmap | `uwf-sprint` | Execution | Markdown | Orchestrator | Milestone sequencing |
 | Canonical Build Spec | `uwf-cbs` | Planning | SQLite | `uwf-core-blueprint` agent | Component inventory, interface contracts, dependency graph, build sequencing, and constraint registry. Assembled from First-phase artifacts; not a parallel source of truth. |
-| Build Record | `uwf-br` | Operational | JSON | `uwf-core-blueprint` agent (init), all subsequent stages (append) | Append-only layered execution log with strata 0 (context), 1 (decisions and risk register), 2 (dependencies, including blocking risk entries), 3 (actions), 4 (verification). |
-| Changelog | `uwf-changelog` | Operational | Append-only log | `uwf-tracking` agent | Progress audit trail |
+| Build Record | `uwf-br` | Operational | JSON | `uwf-core-blueprint` agent (init, strata 0–4), `uwf-core-snapshot` agent (closes stratum 5) | Append-only layered execution log with strata 0 (context), 1 (decisions and risk register), 2 (dependencies, including blocking risk entries), 3 (actions), 4 (verification), 5 (final state — populated at closure by snapshot stage). |
+| Deterministic Reconstruction Spec | `uwf-drs` | Operational | JSON | `uwf-core-snapshot` agent | Point-in-time backward-looking record of what was built and why. Contains accepted components with pinned versions, resolved dependency graph, executed build sequence, full ADR set with rationale, confidence scores for brownfield-inferred entries, gap log, and divergence log. Enables a cold-starting AI agent to reconstruct or extend the system without re-deriving prior decisions. |
+| Changelog | `uwf-changelog` | Operational | Append-only log | `uwf-tracking` agent (progress entries), `uwf-core-snapshot` agent (closure entry) | Progress audit trail |
 
 ---
 
@@ -183,6 +185,7 @@ universal-agentic-workflow/
 │   │   ├── uwf-tracking.agent.md        # Phase 3
 │   │   ├── uwf-refinement.agent.md
 │   │   ├── uwf-acceptance.agent.md
+│   │   ├── uwf-core-snapshot.agent.md
 │   │   └── uwf-retro.agent.md
 │   ├── skills/
 │   │   ├── project-manager/
@@ -191,6 +194,8 @@ universal-agentic-workflow/
 │   │   │   └── SKILL.md                 # SWE archetype definition
 │   │   ├── uwf-cbs/
 │   │   │   └── SKILL.md                 # Composite build spec generator
+│   │   ├── uwf-snapshot/
+│   │   │   └── SKILL.md                 # Snapshot stage — uwf-drs producer
 │   │   └── uwf-nextturn/
 │   │       └── SKILL.md                 # Context carryover protocol
 │   ├── instructions/
