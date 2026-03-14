@@ -23,10 +23,10 @@
 | # | Check | Result |
 |---|---|---|
 | 1 | Risk plan file exists and is non-empty | pass |
-| 2 | All required fields populated | |
-| 3 | Risk IDs are sequential and unique | |
-| 4 | Category values are valid | |
-| 5 | Likelihood and impact values are valid | |
-| 6 | Blocking Dependency Summary present | |
-| 7 | Slippage Risk Signal Map present | |
+| 2 | All required fields populated | tbd |
+| 3 | Risk IDs are sequential and unique | tbd |
+| 4 | Category values are valid | tbd |
+| 5 | Likelihood and impact values are valid | tbd |
+| 6 | Blocking Dependency Summary present | tbd |
+| 7 | Slippage Risk Signal Map present | tbd |
 | 8 | Exit criteria results recorded | pass |
