@@ -45,7 +45,7 @@ Read all of the following artifacts before producing any output. If a file does 
 
 ## uwf-drs JSON Schema
 
-Produce `{output_path}/{role}-drs.json` conforming exactly to this schema. All top-level fields are required. No field may be omitted — use `null` for fields where data is genuinely absent rather than omitting them entirely.
+Produce `{output_path}/{role}-drs.json` using this as its base schema. All top-level fields shown in this schema are required, but you may add additional top-level fields (such as `exit_criteria`) when instructed elsewhere in this skill. No defined field may be omitted — use `null` for fields where data is genuinely absent rather than omitting them entirely.
 
 ```json
 {
