@@ -31,6 +31,7 @@ Persona skill for macro-level project planning: scoping a new effort, producing 
 | `uwf-project_manager-timeline-planner` | Issues backlog and project roadmap |
 | `uwf-project_manager-reviewer` | Quality and security review of all planning artifacts |
 | `uwf-core-acceptance` | Final acceptance gate checks |
+| `uwf-core-refinement` | Groom user stories to production-ready standard before acceptance |
 | `uwf-core-snapshot` | Produce uwf-drs; close uwf-br layer 5; append changelog closure entry |
 | `uwf-core-retro` | Retrospective |
 
@@ -62,6 +63,7 @@ Execute stages **in this exact order**. Do not advance past a stage until its ga
 | 12 | `planning` | `uwf-project_manager-reviewer` | Review all planning artifacts for correctness, gaps, and security. Produces a fix list or a clean bill. |
 | 12a | `planning` | *(fix-loop — see engine skill)* | If reviewer returned fixes: re-invoke responsible subagent(s), then re-invoke reviewer. Max 3 review cycles. |
 | 13 | `planning` → `waiting-acceptance` | `uwf-core-project-tracking` | Track issues in project tracking. |
+| 13a | `waiting-acceptance` | `uwf-core-refinement` | Groom all draft user stories to production-ready standard: field completeness, nine quality controls, brownfield confidence promotion. Blocked stories must be resolved before acceptance. |
 | 14 | `waiting-acceptance` → `acceptance` | `uwf-core-acceptance` | Run final acceptance checks against all artifacts. |
 | 15 | `acceptance` → `snapshot` | `uwf-core-snapshot` | Produce `project-drs.json`; close `project-br.json` layer 5; append closure entry to `uwf-changelog.md`. |
 | 16 | `snapshot` → `closed` | `uwf-core-retro` | Produce retrospective and advance phase to `closed`. |

@@ -33,6 +33,7 @@ Persona skill for driving individual work items (issues) from intake through imp
 | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or clean bill |
 | `uwf-core-technical-writer` | Review and update documentation from changed artifacts |
 | `uwf-core-acceptance` | Run acceptance gate checklist |
+| `uwf-core-refinement` | Groom user stories to production-ready standard before acceptance |
 | `uwf-core-snapshot` | Produce uwf-drs; close uwf-br layer 5; append changelog closure entry |
 | `uwf-core-retro` | Retrospective |
 
@@ -59,6 +60,7 @@ Execute stages **in this exact order** for each active issue. Do not advance pas
 | 12 | `execution` | `uwf-issue-implementer` | Execute the work plan. |
 | 13 | `execution` | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or recommend acceptance. *(fix-loop — see engine skill)* |
 | 14 | `execution` → `acceptance` | `uwf-core-technical-writer` | Review and update `./tmp/workflow-artifacts/` documentation from new or changed artifacts. |
+| 14a | `acceptance` | `uwf-core-refinement` | Groom all draft user stories to production-ready standard: field completeness, nine quality controls, brownfield confidence promotion. Blocked stories must be resolved before acceptance. |
 | 15 | `acceptance` | `uwf-core-acceptance` | Run acceptance gate checklist; produce `issues-acceptance.md`. |
 | 16 | `acceptance` → `snapshot` | `uwf-core-snapshot` | Produce `issues-drs.json`; close `issues-br.json` layer 5; append closure entry to `uwf-changelog.md`. |
 | 17 | `snapshot` → `closed` | `uwf-core-retro` | Run the retrospective and advance the phase to `closed`. When all issues are closed or skipped, summarize completion before exiting the workflow. |

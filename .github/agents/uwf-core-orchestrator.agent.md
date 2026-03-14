@@ -17,6 +17,7 @@ agents:
   - uwf-core-security-plan
   - uwf-core-test-planner
   - uwf-core-blueprint
+  - uwf-core-refinement
   - uwf-core-acceptance
   - uwf-core-snapshot
   - uwf-core-retro

@@ -114,8 +114,8 @@ Stories entering Phase 3 must pass these checks:
 
 | Artifact | ID | Type | Format | Maintained By | Purpose |
 |---|---|---|---|---|---|
-| User Stories | `uwf-stories` | Planning | Markdown + CSV | `uwf-tracking` agent | Work item backlog |
-| Traceability Matrix | `uwf-tm` | Planning | Markdown | `uwf-tracking` agent | Story → ADR → Code → Test links |
+| User Stories | `uwf-stories` | Planning | Markdown + CSV | `uwf-tracking` agent (status sync), `uwf-core-refinement` agent (field completeness + quality controls) | Work item backlog. Refined to production-ready standard by the refinement stage before acceptance. |
+| Traceability Matrix | `uwf-tm` | Planning | Markdown | `uwf-tracking` agent (initial links), `uwf-core-refinement` agent (refinement result rows) | Story → ADR → Code → Test links. Refinement adds per-story pass/fail rows after quality control checks. |
 | ADR Set | `uwf-adrs` | Architecture | Markdown | `uwf-adr` agent | Per-decision records |
 | Risk Register | `uwf-risk` | Planning | Markdown | `uwf-core-risk-planner` agent | Project-level risk register: schedule, dependency, technical-debt, and external risks. Appended to uwf-br layer 1. Blocking dependency risks also flagged in layer 2. Feeds `slippage_risk_signal` on user stories. |
 | Sprint / Roadmap | `uwf-sprint` | Execution | Markdown | Orchestrator | Milestone sequencing |
@@ -123,6 +123,7 @@ Stories entering Phase 3 must pass these checks:
 | Build Record | `uwf-br` | Operational | JSON | `uwf-core-blueprint` agent (init, strata 0–4), `uwf-core-snapshot` agent (closes stratum 5) | Append-only layered execution log with strata 0 (context), 1 (decisions and risk register), 2 (dependencies, including blocking risk entries), 3 (actions), 4 (verification), 5 (final state — populated at closure by snapshot stage). |
 | Deterministic Reconstruction Spec | `uwf-drs` | Operational | JSON | `uwf-core-snapshot` agent | Point-in-time backward-looking record of what was built and why. Contains accepted components with pinned versions, resolved dependency graph, executed build sequence, full ADR set with rationale, confidence scores for brownfield-inferred entries, gap log, and divergence log. Enables a cold-starting AI agent to reconstruct or extend the system without re-deriving prior decisions. |
 | Changelog | `uwf-changelog` | Operational | Append-only log | `uwf-tracking` agent (progress entries), `uwf-core-snapshot` agent (closure entry) | Progress audit trail |
+| Refinement Report | `uwf-refinement-report` | Quality | Markdown | `uwf-core-refinement` agent | Stage gate artifact for the refinement stage. Records field completeness results, quality control results per story, brownfield gap resolution table (if applicable), rejected stories, and overall verdict (`pass` or `blocked`). |
 
 ---
 
