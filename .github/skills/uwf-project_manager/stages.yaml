@@ -114,6 +114,25 @@ stages:
           prefix: "ADR-"
           label: "ADR-*.md"
 
+  - name: risk-plan
+    agent: uwf-core-risk-planner
+    max_retries: 2
+    on_gate_failure: retry
+    run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-intake.md"
+      - "{{output_path}}/project-discovery.md"
+      - "{{output_path}}/project-requirements.md"
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
+    outputs:
+      - "{{output_path}}/project-risk-plan.md"
+    gated: true
+    gate:
+      checks:
+        - type: require_non_empty
+          path: "{{output_path}}/project-risk-plan.md"
+          label: "project-risk-plan.md"
+
   - name: security-plan
     agent: uwf-core-security-plan
     max_retries: 2
@@ -121,6 +140,7 @@ stages:
     run_as_subagent: true
     inputs:
       - "{{output_path}}/project-requirements.md"
+      - "{{output_path}}/project-risk-plan.md"
     outputs:
       - "{{output_path}}/project-security-plan.md"
     gated: true
@@ -166,6 +186,7 @@ stages:
       - "{{output_path}}/project-discovery.md"
       - "{{output_path}}/project-requirements.md"
       - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
+      - "{{output_path}}/project-risk-plan.md"
       - "{{output_path}}/project-security-plan.md"
       - "{{output_path}}/project-test-plan.md"
     outputs:

@@ -50,6 +50,7 @@ Generic agents reusable by any orchestrator, regardless of whether you are runni
 | `uwf-core-project-tracking.agent.md` | Manages workflow state transitions using whichever tracking skill is configured. |
 | `uwf-core-requirements.agent.md` | Writes PRDs, Non-Functional Requirements, and testable acceptance criteria. |
 | `uwf-core-retro.agent.md` | Runs end-of-cycle retrospectives and surfaces workflow or implementation improvements. |
+| `uwf-core-risk-planner.agent.md` | Produces a project-level risk register covering schedule, dependency, technical-debt, and external risks via the `uwf-risk-planner` skill. Runs after `adr` and before `security-plan`. |
 | `uwf-core-security-plan.agent.md` | Generates threat models and security control plans via the `uwf-threat-model` skill. |
 | `uwf-core-tehcnical-writer.agent.md` | Promotes ephemeral `tmp/` artifacts into permanent `./docs/` documentation and files gaps as backlog items. |
 | `uwf-core-test-planner.agent.md` | Defines test stubs, integration scenarios, and coverage targets before implementation begins. |
@@ -90,6 +91,7 @@ Skills encapsulate discrete behaviors. Agents call skills by name; swapping a sk
 | `uwf-cbs` | Blueprint stage behavior: synthesizes First-phase outputs into the uwf-cbs SQLite database (components, interfaces, dependencies, sequencing, constraints) and initializes the uwf-br Build Record. Used by `uwf-core-blueprint`. | — |
 | `uwf-local-tracking` | Manages work item state using the local filesystem (`./tmp/state/.../open/`, `active/`, `closed/`). | Replace with `uwf-github-track` to use GitHub Issues instead. |
 | `uwf-review-to-issues` | Parses prioritized review or audit tables and creates ungroomed backlog items in `./tmp/state/ungroomed/open/`. | — |
+| `uwf-risk-planner` | Produces a project-level risk register (`{role}-risk-plan.md`) covering schedule, dependency, technical-debt, and external risks. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. Used by `uwf-core-risk-planner`. | — |
 | `uwf-state-manager` | Authoritative source for mutating `./docs/uwf-state.json` and managing phase lifecycle transitions. | — |
 | `uwf-threat-model` | Generates STRIDE-style threat models with assets, trust boundaries, mitigations, and a verification checklist into `tmp/workflow-artifacts/{mode}-security-plan.md`. | — |
 

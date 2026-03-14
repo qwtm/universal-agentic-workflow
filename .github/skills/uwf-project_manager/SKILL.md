@@ -24,6 +24,7 @@ Persona skill for macro-level project planning: scoping a new effort, producing 
 | `uwf-core-discovery` | Inspect workspace; surface unknowns |
 | `uwf-core-requirements` | Produce PRD, NFRs, acceptance criteria |
 | `uwf-core-adr` | Create architectural decision records |
+| `uwf-core-risk-planner` | Project-level risk register (schedule, dependency, technical-debt, external risks) |
 | `uwf-core-security-plan` | Threat model and security controls |
 | `uwf-core-test-planner` | Test strategy, stubs, coverage targets |
 | `uwf-core-blueprint` | Synthesize First-phase outputs into uwf-cbs and initialize uwf-br |
@@ -52,16 +53,17 @@ Execute stages **in this exact order**. Do not advance past a stage until its ga
 | 4 | `discovery` → `planning` | `uwf-core-project-tracking` | Advance phase to `planning`. |
 | 5 | `planning` | `uwf-core-requirements` | Produce PRD, NFRs, and acceptance criteria. |
 | 6 | `planning` | `uwf-core-adr` | *(Conditional)* Create ADRs if discovery recommended architectural decisions. |
-| 7 | `planning` | `uwf-core-security-plan` | *(Conditional)* Produce threat model if project is security-sensitive or discovery flagged security concerns. |
-| 8 | `planning` | `uwf-core-test-planner` | Define test strategy, stubs, and coverage targets. |
-| 9 | `planning` | `uwf-core-blueprint` | Synthesize all First-phase outputs into uwf-cbs (Canonical Build Spec) and initialize uwf-br (Build Record) strata 0–4. |
-| 10 | `planning` | `uwf-project_manager-timeline-planner` | Produce the issues backlog and project roadmap. |
-| 11 | `planning` | `uwf-project_manager-reviewer` | Review all planning artifacts for correctness, gaps, and security. Produces a fix list or a clean bill. |
-| 11a | `planning` | *(fix-loop — see engine skill)* | If reviewer returned fixes: re-invoke responsible subagent(s), then re-invoke reviewer. Max 3 review cycles. |
-| 12 | `planning` → `waiting-acceptance` | `uwf-core-project-tracking` | Track issues in project tracking. |
-| 13 | `waiting-acceptance` → `acceptance` | `uwf-core-acceptance` | Run final acceptance checks against all artifacts. |
-| 14 | `acceptance` → `closed` | `uwf-core-project-tracking` | Advance phase to `closed`; record completion. |
-| 15 | `closed` | `uwf-core-retro` | *(Optional)* Produce retrospective if requested or if issues were encountered. |
+| 7 | `planning` | `uwf-core-risk-planner` | Produce risk register covering schedule, dependency, technical-debt, and external risks. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. |
+| 8 | `planning` | `uwf-core-security-plan` | *(Conditional)* Produce threat model if project is security-sensitive or discovery flagged security concerns. |
+| 9 | `planning` | `uwf-core-test-planner` | Define test strategy, stubs, and coverage targets. |
+| 10 | `planning` | `uwf-core-blueprint` | Synthesize all First-phase outputs into uwf-cbs (Canonical Build Spec) and initialize uwf-br (Build Record) strata 0–4. |
+| 11 | `planning` | `uwf-project_manager-timeline-planner` | Produce the issues backlog and project roadmap. |
+| 12 | `planning` | `uwf-project_manager-reviewer` | Review all planning artifacts for correctness, gaps, and security. Produces a fix list or a clean bill. |
+| 12a | `planning` | *(fix-loop — see engine skill)* | If reviewer returned fixes: re-invoke responsible subagent(s), then re-invoke reviewer. Max 3 review cycles. |
+| 13 | `planning` → `waiting-acceptance` | `uwf-core-project-tracking` | Track issues in project tracking. |
+| 14 | `waiting-acceptance` → `acceptance` | `uwf-core-acceptance` | Run final acceptance checks against all artifacts. |
+| 15 | `acceptance` → `closed` | `uwf-core-project-tracking` | Advance phase to `closed`; record completion. |
+| 16 | `closed` | `uwf-core-retro` | *(Optional)* Produce retrospective if requested or if issues were encountered. |
 
 ---
 

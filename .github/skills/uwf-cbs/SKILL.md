@@ -25,6 +25,7 @@ Read all of the following artifacts before producing any output. If a file does 
 | `{output_path}/{role}-discovery.md` | Codebase findings, existing components, unknowns |
 | `{output_path}/{role}-requirements.md` | Functional requirements, NFRs, acceptance criteria |
 | `docs/adr/ADR-*.md` | Architectural decisions and their rationale |
+| `{output_path}/{role}-risk-plan.md` | Risk register with schedule, dependency, technical-debt, and external risks (if produced) |
 | `{output_path}/{role}-security-plan.md` | Threat model, security constraints, controls (if produced) |
 | `{output_path}/{role}-test-plan.md` | Test strategy, coverage targets, test scope |
 
@@ -263,8 +264,8 @@ The Build Record (`{output_path}/{role}-br.json`) is an append-only layered exec
       "entries": []
     },
     "1": {
-      "label": "Decisions",
-      "description": "Architectural decisions, technology choices, and rationale.",
+      "label": "Decisions and Risk Register",
+      "description": "Architectural decisions, technology choices, rationale, and project-level risk register entries (schedule, dependency, technical-debt, external).",
       "entries": []
     },
     "2": {
@@ -305,8 +306,8 @@ Each entry in a stratum's `entries` array must conform to this schema:
 | Stratum | Label | Populate From |
 |---|---|---|
 | 0 | Context | `{role}-intake.md` — project goal, non-goals, constraints, stakeholders, risk tolerance |
-| 1 | Decisions | `docs/adr/ADR-*.md` — one entry per ADR, summarising the decision and its rationale |
-| 2 | Dependencies | `{role}-discovery.md` + `{role}-requirements.md` — external libraries, APIs, and services identified |
+| 1 | Decisions and Risk Register | `docs/adr/ADR-*.md` — one entry per ADR, summarising the decision and its rationale; `{role}-risk-plan.md` — one entry per risk register row (appended after ADR entries) |
+| 2 | Dependencies | `{role}-discovery.md` + `{role}-requirements.md` — external libraries, APIs, and services identified; `{role}-risk-plan.md` — one additional entry per blocking dependency risk (`category: dependency`, `blocking: true`) |
 | 3 | Actions | `{role}-requirements.md` + sequencing table in uwf-cbs — ordered build steps (populated from the sequencing table) |
 | 4 | Verification | `{role}-test-plan.md` — test strategy, coverage targets, and test IDs |
 
@@ -345,8 +346,8 @@ Execute these steps in order. Do not skip a step. Do not advance to the next ste
 7. **Initialize the Build Record (uwf-br).**
    - Create `{output_path}/{role}-br.json` using the JSON structure defined above.
    - Populate stratum 0 from `{role}-intake.md`: record the project goal, non-goals, and key constraints as entries.
-   - Populate stratum 1 from `docs/adr/ADR-*.md`: one entry per ADR found.
-   - Populate stratum 2 from `{role}-discovery.md` and `{role}-requirements.md`: one entry per external dependency or integration identified.
+   - Populate stratum 1 from `docs/adr/ADR-*.md`: one entry per ADR found. Then, if `{role}-risk-plan.md` exists, append one entry per risk register row using `"source": "risk-planner"` and the risk entry detail.
+   - Populate stratum 2 from `{role}-discovery.md` and `{role}-requirements.md`: one entry per external dependency or integration identified. Then, if `{role}-risk-plan.md` exists, append one additional entry for each risk with `category: dependency` and `blocking: true`, using `"source": "risk-planner"`.
    - Populate stratum 3 from the `sequencing` table: one entry per row, in step_number order.
    - Populate stratum 4 from `{role}-test-plan.md`: one entry per test ID or test scenario found.
 
@@ -392,6 +393,7 @@ If any check fails and the failure is due to a missing upstream artifact (e.g., 
 | `{role}-discovery.md` is missing | Continue with a warning. Record the gap in **Missing Inputs**. Components extracted from requirements alone. |
 | `docs/adr/` is empty or no ADR files exist | Continue with a warning. Stratum 1 will have zero entries; record this in **Missing Inputs**. |
 | `{role}-security-plan.md` is missing | Continue with a warning. No security constraints will be registered; record this in **Missing Inputs**. |
+| `{role}-risk-plan.md` is missing | Continue with a warning. No risk register entries will be appended to stratum 1 and no blocking dependency entries to stratum 2; record this in **Missing Inputs**. |
 | `{role}-test-plan.md` is missing | Continue with a warning. Stratum 4 will have zero entries; record this in **Missing Inputs**. |
 | Circular dependency detected | Do not abort. Record the cycle as a `dependency-conflict` constraint and continue. |
 | `uwf-cbs.db` already exists from a prior run | Drop and recreate all five tables before populating. This stage is idempotent. |

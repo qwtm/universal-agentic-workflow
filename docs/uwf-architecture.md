@@ -36,8 +36,9 @@ Every workflow begins here regardless of archetype. The goal is situational awar
 | **Discovery** | `uwf-discovery.agent.md` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. Produce a lay-of-the-land summary. |
 | **Requirements** | `uwf-requirements.agent.md` | Elicit and structure functional + non-functional requirements. Output structured user stories (see Story Schema below). |
 | **ADR** | `uwf-adr.agent.md` | Capture architectural decisions using a standard ADR template. Link each decision to the requirement(s) it resolves. |
-| **Security Planner** | `uwf-security-planner.agent.md` | Threat model the proposed scope. Identify attack surfaces, data classification, auth/authz requirements. Output security stories or constraints. |
-| **Test Planner** | `uwf-test-planner.agent.md` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests, test data requirements. |
+| **Risk Planner** | `uwf-core-risk-planner.agent.md` | Identify and document project-level execution risks: schedule, dependency, technical-debt, and external. Produce a risk register. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. Feeds slippage risk signals into user stories for the Refinement stage. |
+| **Security Planner** | `uwf-core-security-plan.agent.md` | Threat model the proposed scope. Identify attack surfaces, data classification, auth/authz requirements. Output security stories or constraints. |
+| **Test Planner** | `uwf-core-test-planner.agent.md` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests, test data requirements. |
 | **Blueprint** | `uwf-core-blueprint.agent.md` | Synthesize all First-phase outputs into the Canonical Build Spec (uwf-cbs) SQLite database and initialize the Build Record (uwf-br) strata 0–4. Produces the machine-readable handoff artifact from Phase 1 to Phase 2. |
 
 ### Phase 2 — Execution (archetype-specific, pick one)
@@ -86,6 +87,7 @@ Every user story must conform to this schema before exiting Refinement:
 | `dependencies` | References to other story IDs or ADRs |
 | `status` | Enum: `draft` · `refined` · `in-progress` · `review` · `done` · `blocked` |
 | `story_points` | Optional but consistent when used |
+| `slippage_risk_signal` | Optional. Populated during Refinement from risk-planner output. References one or more Risk IDs (e.g., `RSK-0001,RSK-0003`) where the risk's `linked_story_ids` includes this story. Signals that this story is on a risk path and may require re-scoping or contingency planning. |
 
 ---
 
@@ -102,7 +104,7 @@ Stories entering Phase 3 must pass these checks:
 | **Decomposition correctness** | Stories are independently deliverable. No hidden coupling. |
 | **Dependency resolution** | All dependencies are identified, ordered, and non-circular. |
 | **Constraint compliance** | Security, performance, and accessibility constraints are addressed. |
-| **Slippage risk signal** | Stories exceeding estimate thresholds are flagged for re-scoping. |
+| **Slippage risk signal** | Stories with a populated `slippage_risk_signal` field serve as the flag — this field is sourced from risk-planner output and populated during Refinement. Any story with a non-empty `slippage_risk_signal` must be reviewed for re-scoping or contingency planning before refinement completes. |
 | **NFR coverage** | Non-functional requirements are explicitly addressed, not assumed. |
 
 ---
@@ -114,9 +116,10 @@ Stories entering Phase 3 must pass these checks:
 | User Stories | `uwf-stories` | Planning | Markdown + CSV | `uwf-tracking` agent | Work item backlog |
 | Traceability Matrix | `uwf-tm` | Planning | Markdown | `uwf-tracking` agent | Story → ADR → Code → Test links |
 | ADR Set | `uwf-adrs` | Architecture | Markdown | `uwf-adr` agent | Per-decision records |
+| Risk Register | `uwf-risk` | Planning | Markdown | `uwf-core-risk-planner` agent | Project-level risk register: schedule, dependency, technical-debt, and external risks. Appended to uwf-br layer 1. Blocking dependency risks also flagged in layer 2. Feeds `slippage_risk_signal` on user stories. |
 | Sprint / Roadmap | `uwf-sprint` | Execution | Markdown | Orchestrator | Milestone sequencing |
 | Canonical Build Spec | `uwf-cbs` | Planning | SQLite | `uwf-core-blueprint` agent | Component inventory, interface contracts, dependency graph, build sequencing, and constraint registry. Assembled from First-phase artifacts; not a parallel source of truth. |
-| Build Record | `uwf-br` | Operational | JSON | `uwf-core-blueprint` agent (init), all subsequent stages (append) | Append-only layered execution log with strata 0 (context), 1 (decisions), 2 (dependencies), 3 (actions), 4 (verification). |
+| Build Record | `uwf-br` | Operational | JSON | `uwf-core-blueprint` agent (init), all subsequent stages (append) | Append-only layered execution log with strata 0 (context), 1 (decisions and risk register), 2 (dependencies, including blocking risk entries), 3 (actions), 4 (verification). |
 | Changelog | `uwf-changelog` | Operational | Append-only log | `uwf-tracking` agent | Progress audit trail |
 
 ---
@@ -150,7 +153,7 @@ If you genuinely need a single "hand this to a new team and they can rebuild eve
 | Gap | Proposed Addition | Primitive |
 |---|---|---|
 | **Estimation** | No stage for effort estimation or complexity scoring. Refinement assumes points exist but nothing produces them. | Add `uwf-estimation.agent.md` between Refinement and Acceptance, or fold into Refinement. |
-| **Risk Register** | Security Planner covers threats but not project-level risks (schedule, scope, resource, technical debt). | Add `uwf-risk.agent.md` to Phase 1, or extend Security Planner's scope. |
+| ~~**Risk Register**~~ | ~~Security Planner covers threats but not project-level risks (schedule, scope, resource, technical debt).~~ | **Addressed.** `uwf-core-risk-planner.agent.md` added to Phase 1 (after `adr`, before `security-planner`). Produces a risk register appended to uwf-br layer 1. Blocking dependency risks flagged in layer 2. Slippage risk signals traced to user stories via `slippage_risk_signal` field. |
 | **Definition of Done** | Quality Controls define story-level checks but there's no explicit DoD for the workflow itself. | Add a `dod.instructions.md` that hooks enforce. |
 | **Handoff Protocol** | No formal contract for how one stage passes output to the next. Currently implicit. | Define a `handoff-contract.instructions.md` specifying required output schema per stage. Hooks validate on stage transition. |
 | **Context Carryover** | In agent-orchestrated mode, how does the orchestrator pass accumulated state between subagent invocations? | Use the `/nextturn` pattern you've already designed — subagents write progress to files, orchestrator reads on resume. Formalize as a skill. |
@@ -276,7 +279,7 @@ description: >
 When this skill is active, the orchestrator should:
 
 ## Stage Sequencing
-1. Phase 1: intake → discovery → requirements → adr → security-planner → test-planner
+1. Phase 1: intake → discovery → requirements → adr → risk-planner → security-planner → test-planner
 2. Phase 2: pm-intake → timeline-planner → pm-reviewer
 3. Phase 3: tracking → refinement → acceptance → retro
 
