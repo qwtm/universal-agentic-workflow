@@ -128,6 +128,31 @@ stages:
           path: "{{output_path}}/issues-test-plan.md"
           label: "issues-test-plan.md"
 
+  - name: blueprint
+    agent: uwf-core-blueprint
+    max_retries: 2
+    on_gate_failure: retry
+    run_as_subagent: true
+    inputs:
+      - "{{output_path}}/issues-intake.md"
+      - "{{output_path}}/issues-discovery.md"
+      - "{{output_path}}/issues-requirements.md"
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
+      - "{{output_path}}/issues-security-plan.md"
+      - "{{output_path}}/issues-test-plan.md"
+    outputs:
+      - "{{output_path}}/issues-blueprint.md"
+      - "{{output_path}}/issues-br.json"
+    gated: true
+    gate:
+      checks:
+        - type: require_non_empty
+          path: "{{output_path}}/issues-blueprint.md"
+          label: "issues-blueprint.md"
+        - type: require_non_empty
+          path: "{{output_path}}/issues-br.json"
+          label: "issues-br.json"
+
   - name: work-plan
     agent: uwf-sw_dev-work-planner
     max_retries: 2

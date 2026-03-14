@@ -156,6 +156,31 @@ stages:
           path: "{{output_path}}/project-test-plan.md"
           label: "project-test-plan.md"
 
+  - name: blueprint
+    agent: uwf-core-blueprint
+    max_retries: 2
+    on_gate_failure: retry
+    run_as_subagent: true
+    inputs:
+      - "{{output_path}}/project-intake.md"
+      - "{{output_path}}/project-discovery.md"
+      - "{{output_path}}/project-requirements.md"
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
+      - "{{output_path}}/project-security-plan.md"
+      - "{{output_path}}/project-test-plan.md"
+    outputs:
+      - "{{output_path}}/project-blueprint.md"
+      - "{{output_path}}/project-br.json"
+    gated: true
+    gate:
+      checks:
+        - type: require_non_empty
+          path: "{{output_path}}/project-blueprint.md"
+          label: "project-blueprint.md"
+        - type: require_non_empty
+          path: "{{output_path}}/project-br.json"
+          label: "project-br.json"
+
   - name: timeline-planning
     agent: uwf-project_manager-timeline-planner
     max_retries: 2

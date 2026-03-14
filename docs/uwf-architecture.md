@@ -38,6 +38,7 @@ Every workflow begins here regardless of archetype. The goal is situational awar
 | **ADR** | `uwf-adr.agent.md` | Capture architectural decisions using a standard ADR template. Link each decision to the requirement(s) it resolves. |
 | **Security Planner** | `uwf-security-planner.agent.md` | Threat model the proposed scope. Identify attack surfaces, data classification, auth/authz requirements. Output security stories or constraints. |
 | **Test Planner** | `uwf-test-planner.agent.md` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests, test data requirements. |
+| **Blueprint** | `uwf-core-blueprint.agent.md` | Synthesize all First-phase outputs into the Canonical Build Spec (uwf-cbs) SQLite database and initialize the Build Record (uwf-br) strata 0–4. Produces the machine-readable handoff artifact from Phase 1 to Phase 2. |
 
 ### Phase 2 — Execution (archetype-specific, pick one)
 
@@ -114,7 +115,8 @@ Stories entering Phase 3 must pass these checks:
 | Traceability Matrix | `uwf-tm` | Planning | Markdown | `uwf-tracking` agent | Story → ADR → Code → Test links |
 | ADR Set | `uwf-adrs` | Architecture | Markdown | `uwf-adr` agent | Per-decision records |
 | Sprint / Roadmap | `uwf-sprint` | Execution | Markdown | Orchestrator | Milestone sequencing |
-| Canonical Build Spec | `uwf-cbs` | Planning | SQLite | `uwf-cbs` skill | Reproducible build blueprint (enterprise) |
+| Canonical Build Spec | `uwf-cbs` | Planning | SQLite | `uwf-core-blueprint` agent | Component inventory, interface contracts, dependency graph, build sequencing, and constraint registry. Assembled from First-phase artifacts; not a parallel source of truth. |
+| Build Record | `uwf-br` | Operational | JSON | `uwf-core-blueprint` agent (init), all subsequent stages (append) | Append-only layered execution log with strata 0 (context), 1 (decisions), 2 (dependencies), 3 (actions), 4 (verification). |
 | Changelog | `uwf-changelog` | Operational | Append-only log | `uwf-tracking` agent | Progress audit trail |
 
 ---

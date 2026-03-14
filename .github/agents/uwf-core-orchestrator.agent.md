@@ -15,6 +15,7 @@ agents:
   - uwf-core-adr
   - uwf-core-security-plan
   - uwf-core-test-planner
+  - uwf-core-blueprint
   - uwf-core-acceptance
   - uwf-core-retro
   - uwf-core-technical-writer

@@ -53,6 +53,7 @@ Generic agents reusable by any orchestrator, regardless of whether you are runni
 | `uwf-core-security-plan.agent.md` | Generates threat models and security control plans via the `uwf-threat-model` skill. |
 | `uwf-core-tehcnical-writer.agent.md` | Promotes ephemeral `tmp/` artifacts into permanent `./docs/` documentation and files gaps as backlog items. |
 | `uwf-core-test-planner.agent.md` | Defines test stubs, integration scenarios, and coverage targets before implementation begins. |
+| `uwf-core-blueprint.agent.md` | Synthesizes all First-phase outputs into the Canonical Build Spec (uwf-cbs) and initializes the Build Record (uwf-br) strata 0–4. Runs after `test-planner` as the final First-phase stage. |
 
 ### Software Developer (sw_dev) Bundle — `uwf-sw_dev-*` / `uwf-issue-*`
 
@@ -86,6 +87,7 @@ Skills encapsulate discrete behaviors. Agents call skills by name; swapping a sk
 | Skill | Purpose | Swap example |
 | :--- | :--- | :--- |
 | `uwf-adr-300` | Creates high-rigor ADRs at `./docs/adr/ADR-####-<slug>.md` using a 300-point checklist covering security, ops, compliance, and testability. | — |
+| `uwf-cbs` | Blueprint stage behavior: synthesizes First-phase outputs into the uwf-cbs SQLite database (components, interfaces, dependencies, sequencing, constraints) and initializes the uwf-br Build Record. Used by `uwf-core-blueprint`. | — |
 | `uwf-local-tracking` | Manages work item state using the local filesystem (`./tmp/state/.../open/`, `active/`, `closed/`). | Replace with `uwf-github-track` to use GitHub Issues instead. |
 | `uwf-review-to-issues` | Parses prioritized review or audit tables and creates ungroomed backlog items in `./tmp/state/ungroomed/open/`. | — |
 | `uwf-state-manager` | Authoritative source for mutating `./docs/uwf-state.json` and managing phase lifecycle transitions. | — |

@@ -26,6 +26,7 @@ Persona skill for driving individual work items (issues) from intake through imp
 | `uwf-core-adr` | Create architectural decision records |
 | `uwf-core-security-plan` | Threat model and security controls |
 | `uwf-core-test-planner` | Test plan and stubs for all testable behaviour |
+| `uwf-core-blueprint` | Synthesize First-phase outputs into uwf-cbs and initialize uwf-br |
 | `uwf-sw_dev-work-planner` | Implementation plan with steps and associated tests |
 | `uwf-issue-implementer` | Execute the work plan |
 | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or clean bill |
@@ -50,13 +51,14 @@ Execute stages **in this exact order** for each active issue. Do not advance pas
 | 6 | `planning` | `uwf-core-adr` | *(Conditional)* Create ADRs if discovery or requirements recommended architectural decisions. |
 | 7 | `planning` | `uwf-core-security-plan` | *(Conditional)* Produce security plan if the issue is security-sensitive. |
 | 8 | `planning` | `uwf-core-test-planner` | Produce test plan and stubs for all testable behaviour. |
-| 9 | `planning` → `execution` | `uwf-sw_dev-work-planner` | Produce work plan with implementation steps and associated tests. |
-| 10 | `execution` | `uwf-issue-implementer` | Execute the work plan. |
-| 11 | `execution` | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or recommend acceptance. *(fix-loop — see engine skill)* |
-| 12 | `execution` → `acceptance` | `uwf-core-technical-writer` | Review and update `./tmp/workflow-artifacts/` documentation from new or changed artifacts. |
-| 13 | `acceptance` | `uwf-core-acceptance` | Run acceptance gate checklist; produce `issues-acceptance.md`. |
-| 14 | `acceptance` → `closed` | `uwf-core-project-tracking` | Execute close/skip transition for the issue. |
-| 15 | *(next issue or done)* | `uwf-core-project-tracking` | If queue has more open issues, return to step 0 for the next issue. If queue is empty, offer a retrospective. |
+| 9 | `planning` | `uwf-core-blueprint` | Synthesize all First-phase outputs into uwf-cbs (Canonical Build Spec) and initialize uwf-br (Build Record) strata 0–4. |
+| 10 | `planning` → `execution` | `uwf-sw_dev-work-planner` | Produce work plan with implementation steps and associated tests. |
+| 11 | `execution` | `uwf-issue-implementer` | Execute the work plan. |
+| 12 | `execution` | `uwf-sw_dev-reviewer` | Review implementation; produce fix list or recommend acceptance. *(fix-loop — see engine skill)* |
+| 13 | `execution` → `acceptance` | `uwf-core-technical-writer` | Review and update `./tmp/workflow-artifacts/` documentation from new or changed artifacts. |
+| 14 | `acceptance` | `uwf-core-acceptance` | Run acceptance gate checklist; produce `issues-acceptance.md`. |
+| 15 | `acceptance` → `closed` | `uwf-core-project-tracking` | Execute close/skip transition for the issue. |
+| 16 | *(next issue or done)* | `uwf-core-project-tracking` | If queue has more open issues, return to step 0 for the next issue. If queue is empty, offer a retrospective. |
 
 ---
 
