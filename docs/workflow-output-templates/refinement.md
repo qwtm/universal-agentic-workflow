@@ -20,7 +20,7 @@ verdict: blocked
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | US-0001 | pass | | | | | | | | | | | | | |
 
-*Brownfield projects only. Omit these columns for greenfield projects.
+*Brownfield projects only. Omit these columns for greenfield projects.*
 
 ## Quality Control Results
 
