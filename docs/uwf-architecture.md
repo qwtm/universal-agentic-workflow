@@ -128,6 +128,8 @@ Stories entering Phase 3 must pass these checks:
 
 ## On CBS and DRS — Do You Need Them?
 
+> Note: Earlier drafts treated CBS and DRS as optional, hand-authored “mega-docs.” In the current design, `uwf-cbs` (Canonical Build Spec database) and `uwf-drs` (Deterministic Reconstruction Spec) are first-class, machine-maintained artifacts produced by the blueprint and snapshot stages. This section is only about whether you need **separate, human-maintained CBS/DRS documents**, not about removing those structured artifacts from the workflow.
+
 The Canonical Build Spec (CBS) and Deterministic Reconstruction Spec (DRS) in your original doc tried to capture "everything needed to reproduce the project from scratch." That's a real concern, but the framing was overloaded — it blurred several distinct responsibilities:
 
 | Responsibility | Better Analog | Already Covered By |

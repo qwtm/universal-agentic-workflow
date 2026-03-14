@@ -61,8 +61,7 @@ Execute stages **in this exact order** for each active issue. Do not advance pas
 | 14 | `execution` → `acceptance` | `uwf-core-technical-writer` | Review and update `./tmp/workflow-artifacts/` documentation from new or changed artifacts. |
 | 15 | `acceptance` | `uwf-core-acceptance` | Run acceptance gate checklist; produce `issues-acceptance.md`. |
 | 16 | `acceptance` → `snapshot` | `uwf-core-snapshot` | Produce `issues-drs.json`; close `issues-br.json` layer 5; append closure entry to `uwf-changelog.md`. |
-| 17 | `snapshot` → `closed` | `uwf-core-project-tracking` | Execute close/skip transition for the issue. |
-| 18 | *(next issue or done)* | `uwf-core-project-tracking` | If queue has more open issues, return to step 0 for the next issue. If queue is empty, offer a retrospective. |
+| 17 | `snapshot` → `closed` | `uwf-core-retro` | Run the retrospective and advance the phase to `closed`. When all issues are closed or skipped, summarize completion before exiting the workflow. |
 
 ---
 
@@ -86,5 +85,5 @@ node .github/skills/uwf-sw_dev/run.mjs --list-stages
 
 - This persona drives **one issue at a time**. Repeat the sequence for each issue in the queue.
 - Do not start implementation (step 10) without a confirmed work plan and test plan.
-- If `uwf-core-project-tracking` reports no eligible open issues after a close/skip transition, summarize project completion and prompt for a retrospective.
+- After all issues in the queue are closed or skipped, use `uwf-core-retro` to summarize project completion and capture the retrospective before exiting the workflow.
 - Ensure all workflow artifacts are scoped to the active issue and maintained in `./tmp/workflow-artifacts/` throughout the issue lifecycle.

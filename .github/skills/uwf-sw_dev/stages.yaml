@@ -275,6 +275,8 @@ stages:
       - "{{output_path}}/issues-blueprint.md"
     outputs:
       - "{{output_path}}/issues-drs.json"
+      - "{{output_path}}/issues-br.json"
+      - "{{output_path}}/uwf-changelog.md"
     gated: true
     gate:
       checks:
@@ -285,6 +287,12 @@ stages:
           path: "{{output_path}}/issues-drs.json"
           text: "divergence_log"
           label: "issues-drs.json divergence_log field present"
+        - type: require_non_empty
+          path: "{{output_path}}/issues-br.json"
+          label: "issues-br.json updated with stratum 5"
+        - type: require_non_empty
+          path: "{{output_path}}/uwf-changelog.md"
+          label: "uwf-changelog.md includes closure entry"
 
   - name: retro
     agent: uwf-core-retro

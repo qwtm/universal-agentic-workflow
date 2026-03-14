@@ -293,6 +293,8 @@ stages:
       - "{{output_path}}/project-blueprint.md"
     outputs:
       - "{{output_path}}/project-drs.json"
+      - "{{output_path}}/project-br.json"
+      - "{{output_path}}/uwf-changelog.md"
     gated: true
     gate:
       checks:
@@ -303,6 +305,12 @@ stages:
           path: "{{output_path}}/project-drs.json"
           text: "divergence_log"
           label: "project-drs.json divergence_log field present"
+        - type: require_non_empty
+          path: "{{output_path}}/project-br.json"
+          label: "project-br.json (build record updated)"
+        - type: require_non_empty
+          path: "{{output_path}}/uwf-changelog.md"
+          label: "uwf-changelog.md (changelog updated)"
 
   - name: retro
     agent: uwf-core-retro
