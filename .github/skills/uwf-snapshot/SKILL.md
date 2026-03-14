@@ -17,7 +17,7 @@ This stage also formally closes the Build Record (`uwf-br`) by populating stratu
 
 ## Inputs
 
-Read all of the following artifacts before producing any output. If a file does not exist, record the gap in the divergence log and continue with available data.
+Read all of the following artifacts before producing any output. If a file does not exist, record the gap in the `gap_log` and continue with available data.
 
 | File | Content |
 |---|---|
