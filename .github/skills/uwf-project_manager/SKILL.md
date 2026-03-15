@@ -29,7 +29,7 @@ Persona skill for macro-level project planning: scoping a new effort, producing 
 | `uwf-core-test-planner` | Test strategy, stubs, coverage targets |
 | `uwf-core-blueprint` | Synthesize First-phase outputs into uwf-cbs and initialize uwf-br |
 | `uwf-project_manager-timeline-planner` | Issues backlog and project roadmap |
-| `uwf-project_manager-reviewer` | Quality and security review of all planning artifacts |
+| `uwf-project_manager-reviewer` | Quality review of all planning artifacts — loads `uwf-reviewer` skill with `Persona: pm` |
 | `uwf-core-acceptance` | Final acceptance gate checks |
 | `uwf-core-refinement` | Groom user stories to production-ready standard before acceptance |
 | `uwf-core-snapshot` | Produce uwf-drs; close uwf-br layer 5; append changelog closure entry |
