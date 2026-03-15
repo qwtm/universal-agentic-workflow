@@ -309,18 +309,12 @@ See [`uwf-companion/README.md`](uwf-companion/README.md) for setup, build, and u
 
 ## Contributing
 
-### Adding a new workflow persona
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full guide covering:
 
-1. Create `.github/skills/uwf-{name}/SKILL.md` following the persona skill structure defined in `.github/skills/uwf-orchestration-engine/SKILL.md`.
-2. Create `.github/skills/uwf-{name}/stages.yaml` following the schema in any existing `stages.yaml`.
-3. Create `.github/skills/uwf-{name}/run.mjs` — the gate-check and stage-list script.
-4. Add any new stage agents to the `agents:` frontmatter list in `.github/agents/uwf-core-orchestrator.agent.md`.
-5. Bootstrap with `@uwf-core-orchestrator workflow={name}`.
+- Adding a new workflow persona (with the `scaffold-skill.mjs` scaffolder)
+- Adding a new stage agent
+- Adding a new skill or tracking backend
+- Script reference for `reset-all.mjs`, `scaffold-skill.mjs`, and all skill CLIs
+- Pull request guidelines
 
-### Adding a new tracking backend
-
-Create a skill directory that exposes the same `issues.mjs` CLI interface as `uwf-local-tracking`. No agent files need to change.
-
-### Architecture reference
-
-See [`docs/uwf-architecture.md`](docs/uwf-architecture.md) for the full architecture spec, including the story schema, quality controls, artifact inventory, and the phase model.
+**Architecture reference:** [`docs/uwf-architecture.md`](docs/uwf-architecture.md)
