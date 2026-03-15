@@ -18,8 +18,11 @@ sections are inactive and must be ignored.
 
 > **Shared infrastructure:** Script commands, DB schema, severity values,
 > verdict values, and the fix-loop protocol are all defined in
-> `.github/skills/uwf-review/SKILL.md`. Read that file first, then apply the
-> persona-specific rules below.
+> `.github/skills/uwf-review/SKILL.md`. Read that file first for infrastructure
+> details, then apply the persona-specific rules below. For permissions and
+> tool usage (including `execute`/`edit`), the constraints defined in this
+> `uwf-reviewer` skill are authoritative and override any conflicting reviewer
+> constraints in `uwf-review`.
 
 ---
 
@@ -29,9 +32,11 @@ sections are inactive and must be ignored.
   not how to correct it.
 - Do NOT review artifacts outside the scope declared for the active persona.
 - Do NOT invent content for missing files. Report absence as a `critical` finding.
-- `execute` is permitted **only** for running `reviews.mjs` script commands.
+- `execute` is permitted **only** for running `reviews.mjs` script commands
+  defined by the shared `uwf-review` infrastructure. No other commands may be run.
 - `edit` is permitted **only** for writing the review output artifact
-  (`{output_path}/*-review.md`). Do NOT edit any other files.
+  (`{output_path}/*-review.md`) via the review workflow. Do NOT edit any other
+  files or directories.
 
 ---
 
