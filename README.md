@@ -79,6 +79,15 @@ Agents for macro-level work: scoping a new effort, building a roadmap, and scaff
 | `uwf-project_manager-timeline-planner.agent.md` | Translates the project scope into a milestone/sprint/issue roadmap and creates the `./tmp/state/` directory structure. |
 | `uwf-project_manager-reviewer.agent.md` | Audits the macro plan for completeness and consistency before execution begins. |
 
+### Solutions Architect Bundle — `uwf-solutions_architect-*`
+
+Agents for **architecture-first engagements**: designing platforms, evaluating migration strategies, defining service boundaries, or producing an ADR set. Use this bundle when the primary deliverable is a System Design Document rather than a project roadmap or implementation sprint.
+
+| Agent file | Responsibility |
+| :--- | :--- |
+| `uwf-solutions_architect-design-planner.agent.md` | Intake: captures architectural goal, system boundaries, quality attributes, and constraints. SDD: produces the System Design Document with elaborated ADRs, interface contracts, measurable NFRs, component dependency graph, cross-domain risk mapping, and full traceability. |
+| `uwf-solutions_architect-reviewer.agent.md` | Architecture review gate: validates design completeness, NFR coverage, requirement traceability, interface contract status, and constraint compliance. Flags unresolved contracts and ungrounded design decisions as blockers. |
+
 ### Forensic Analyst Bundle — `uwf-forensic-analyst-*`
 
 Agents for the **brownfield pre-phase** that runs before Phase 1 on existing projects. When the target is one or more existing repositories, run this bundle first to produce a provisional Build Record (`forensic-br.json`) with confidence-scored entries. Phase 1 then uses that record as its starting state instead of starting from a blank slate.
@@ -106,9 +115,10 @@ Skills encapsulate discrete behaviors. Agents call skills by name; swapping a sk
 | `uwf-forensic-analyst` | Brownfield pre-phase archetype. Governs the five forensic stages (repo-audit → artifact-harvest → intent-inference → confidence-score → gap-report) and defines the confidence scoring schema and `forensic-br.json` output format. Loaded by the orchestrator when `workflow=forensic-analyst`. | — |
 | `uwf-local-tracking` | Manages work item state using the local filesystem (`./tmp/state/.../open/`, `active/`, `closed/`). | Replace with `uwf-github-track` to use GitHub Issues instead. |
 | `uwf-review` | Shared review infrastructure: SQLite-backed findings DB, script commands, fix-loop protocol, severity/verdict rules. **Deprecated as a standalone skill** — loaded as a shared dependency by `uwf-reviewer`. | — |
-| `uwf-reviewer` | Archetype-aware reviewer skill loaded by `uwf-project_manager-reviewer` (`Persona: pm`) and `uwf-sw_dev-reviewer` (`Persona: dev`). Each persona activates a distinct criteria checklist, scope, output format, and escalation path. | — |
+| `uwf-reviewer` | Archetype-aware reviewer skill loaded by `uwf-project_manager-reviewer` (`Persona: pm`), `uwf-sw_dev-reviewer` (`Persona: dev`), and `uwf-solutions_architect-reviewer` (`Persona: arch`). Each persona activates a distinct criteria checklist, scope, output format, and escalation path. | — |
 | `uwf-review-to-issues` | Parses prioritized review or audit tables and creates ungroomed backlog items in `./tmp/state/ungroomed/open/`. | — |
 | `uwf-risk-planner` | Produces a project-level risk register (`{role}-risk-plan.md`) covering schedule, dependency, technical-debt, and external risks. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. Used by `uwf-core-risk-planner`. | — |
+| `uwf-solutions_architect` | Solutions-architect archetype. Governs the architecture-first workflow (design-planner → reviewer-architect) and defines the SDD schema, interface contract format, NFR definition format, and traceability matrix requirements. Loaded by the orchestrator when `workflow=solutions_architect`. | — |
 | `uwf-state-manager` | Authoritative source for mutating `./docs/uwf-state.json` and managing phase lifecycle transitions. | — |
 | `uwf-threat-model` | Generates STRIDE-style threat models with assets, trust boundaries, mitigations, and a verification checklist into `tmp/workflow-artifacts/{mode}-security-plan.md`. | — |
 
