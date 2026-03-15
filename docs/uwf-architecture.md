@@ -163,6 +163,14 @@ When `forensic-br.json` is present (brownfield mode), each Phase 1 stage applies
 | **Work Planner** | `uwf-work-planner.agent.md` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
 | **Reviewer** | `uwf-swe-reviewer.agent.md` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
 
+#### Archetype: Solutions Architect
+
+| Stage | Agent Profile | Skill (persona) | Purpose |
+|---|---|---|---|
+| **Design Planner (Intake)** | `uwf-solutions_architect-design-planner.agent.md` | — | Capture architectural goal, system boundaries, quality attribute priorities, and engagement constraints. |
+| **Design Planner (SDD)** | `uwf-solutions_architect-design-planner.agent.md` | — | Produce the System Design Document: elaborated ADRs, interface contracts, measurable NFRs, component dependency graph, cross-domain risk mapping, and traceability matrix. |
+| **Reviewer** | `uwf-solutions_architect-reviewer.agent.md` | `uwf-reviewer` (`Persona: arch`) | Architecture review gate: design completeness, NFR coverage, traceability, interface contract status, and constraint compliance. |
+
 ### Phase 3 — Closure (shared across all archetypes)
 
 | Stage | Agent Profile | Purpose |

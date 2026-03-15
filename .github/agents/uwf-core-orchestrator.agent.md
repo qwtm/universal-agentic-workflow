@@ -35,6 +35,8 @@ agents:
   - uwf-forensic-analyst-intent-inference
   - uwf-forensic-analyst-confidence-score
   - uwf-forensic-analyst-gap-report
+  - uwf-solutions_architect-design-planner
+  - uwf-solutions_architect-reviewer
 ---
 
 # UWF Core Orchestrator
