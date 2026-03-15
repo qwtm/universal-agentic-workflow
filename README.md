@@ -79,6 +79,20 @@ Agents for macro-level work: scoping a new effort, building a roadmap, and scaff
 | `uwf-project_manager-timeline-planner.agent.md` | Translates the project scope into a milestone/sprint/issue roadmap and creates the `./tmp/state/` directory structure. |
 | `uwf-project_manager-reviewer.agent.md` | Audits the macro plan for completeness and consistency before execution begins. |
 
+### Forensic Analyst Bundle — `uwf-forensic-analyst-*`
+
+Agents for the **brownfield pre-phase** that runs before Phase 1 on existing projects. When the target is one or more existing repositories, run this bundle first to produce a provisional Build Record (`forensic-br.json`) with confidence-scored entries. Phase 1 then uses that record as its starting state instead of starting from a blank slate.
+
+See [`docs/brownfield-path.md`](docs/brownfield-path.md) for the full brownfield workflow diagram and Phase 1 handoff contract.
+
+| Agent file | Responsibility |
+| :--- | :--- |
+| `uwf-forensic-analyst-repo-audit.agent.md` | Stage 1 — Enumerate all repositories in scope, map service boundaries and seams, catalog tech stack per repo. |
+| `uwf-forensic-analyst-artifact-harvest.agent.md` | Stage 2 — Collect all available evidence artifacts: commits, tickets, docs, configs, CI/CD definitions, test suites, existing ADRs. |
+| `uwf-forensic-analyst-intent-inference.agent.md` | Stage 3 — Infer requirements and architectural decisions from observed behavior and collected artifacts. Assign preliminary confidence to each entry. |
+| `uwf-forensic-analyst-confidence-score.agent.md` | Stage 4 — Formal scoring pass: review every entry, finalize confidence tiers (`confirmed`, `inferred-strong`, `inferred-weak`, `gap`), and write the provisional `forensic-br.json` Build Record. |
+| `uwf-forensic-analyst-gap-report.agent.md` | Stage 5 — Surface all `gap` entries; produce the structured human-review document; block until every gap is resolved or accepted as out-of-scope. |
+
 ---
 
 ## Skills (`.github/skills`)
@@ -89,6 +103,7 @@ Skills encapsulate discrete behaviors. Agents call skills by name; swapping a sk
 | :--- | :--- | :--- |
 | `uwf-adr-300` | Creates high-rigor ADRs at `./docs/adr/ADR-####-<slug>.md` using a 300-point checklist covering security, ops, compliance, and testability. | — |
 | `uwf-cbs` | Blueprint stage behavior: synthesizes First-phase outputs into the uwf-cbs SQLite database (components, interfaces, dependencies, sequencing, constraints) and initializes the uwf-br Build Record. Used by `uwf-core-blueprint`. | — |
+| `uwf-forensic-analyst` | Brownfield pre-phase archetype. Governs the five forensic stages (repo-audit → artifact-harvest → intent-inference → confidence-score → gap-report) and defines the confidence scoring schema and `forensic-br.json` output format. Loaded by the orchestrator when `workflow=forensic-analyst`. | — |
 | `uwf-local-tracking` | Manages work item state using the local filesystem (`./tmp/state/.../open/`, `active/`, `closed/`). | Replace with `uwf-github-track` to use GitHub Issues instead. |
 | `uwf-review` | Shared review infrastructure: SQLite-backed findings DB, script commands, fix-loop protocol, severity/verdict rules. **Deprecated as a standalone skill** — loaded as a shared dependency by `uwf-reviewer`. | — |
 | `uwf-reviewer` | Archetype-aware reviewer skill loaded by `uwf-project_manager-reviewer` (`Persona: pm`) and `uwf-sw_dev-reviewer` (`Persona: dev`). Each persona activates a distinct criteria checklist, scope, output format, and escalation path. | — |
@@ -140,3 +155,46 @@ Always-on rules applied automatically across the workspace.
 | Active work items | `./tmp/state/<milestone>/<sprint>/active/<id>.md` |
 | Closed work items | `./tmp/state/<milestone>/<sprint>/closed/<id>.md` |
 | Ungroomed/unplanned work | `./tmp/state/ungroomed/open/<id>.md` |
+
+---
+
+## Brownfield Projects
+
+When the target is one or more **existing repositories** rather than a new project, the workflow starts with the **brownfield pre-phase** before entering Phase 1.
+
+### Project Type Detection
+
+| Condition | Project Type |
+| :--- | :--- |
+| No existing codebase | **Greenfield** — start at Phase 1 directly |
+| One or more existing repos provided as input | **Brownfield** — run the pre-phase first |
+| New component added to an existing system | **Hybrid** — brownfield pre-phase for the existing components, greenfield treatment for the new component |
+
+### When to Run the Pre-Phase
+
+Activate the forensic analyst workflow (`workflow=forensic-analyst`) when:
+
+- The user supplies existing repository URLs or local paths at orchestrator intake.
+- No formal requirements baseline, ADR set, or design documents exist for the existing codebase.
+
+Do **not** activate the pre-phase for:
+
+- New (greenfield) projects with no prior code.
+- Projects that already have a confirmed requirements pack and ADR set — promote those artifacts and start at Phase 1.
+
+### Brownfield Sequence
+
+```
+intake → [brownfield?] → Pre-Phase (forensic-analyst archetype)
+                            repo-audit
+                            artifact-harvest
+                            intent-inference
+                            confidence-score
+                            gap-report → [human review]
+                         → forensic-br.json (provisional uwf-br with confidence scores)
+                         → Phase 1 (reads forensic-br.json as starting state)
+                         → Phase 2 (archetype-specific)
+                         → Phase 3 (refinement acts as confidence promotion gate)
+```
+
+For the full workflow diagram and per-stage handoff contract, see [`docs/brownfield-path.md`](docs/brownfield-path.md).
