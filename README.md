@@ -193,7 +193,6 @@ Every skill directory contains a `SKILL.md` (agent-readable behavior spec) and o
 | `uwf-discovery` | Discovery findings SQLite database. Operated via `discovery.mjs`. |
 | `uwf-forensic-analyst` | Brownfield pre-phase persona. Governs the five forensic stages and defines the confidence scoring schema and `forensic-br.json` output format. Loaded when `workflow=forensic-analyst`. |
 | `uwf-local-tracking` | Issue state management using a local SQLite database. Operated via `issues.mjs`. Default tracking skill; swap with a GitHub Issues skill to change backends without touching agent files. |
-| `uwf-orchestration-engine` | Core engine: stage sequencing, gate enforcement, retry logic, and the fix-loop. Loaded by `uwf-core-orchestrator` at startup. |
 | `uwf-question-protocol` | Question/answer protocol for subagent-to-orchestrator communication. Questions persisted in SQLite with a numeric ID. Operated via `questions.mjs`. |
 | `uwf-refinement` | Story quality gate: field completeness, nine quality controls, and brownfield confidence-promotion logic. |
 | `uwf-requirements` | Requirements SQLite database (FR / NFR / DR / AC / RK). Operated via `requirements.mjs`. |
