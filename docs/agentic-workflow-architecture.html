@@ -549,7 +549,7 @@ flowchart LR
   <div class="diagram-card">
     <div class="mermaid">
 graph TD
-    subgraph PLUGIN["📦 Plugin (self-contained unit)"]
+    subgraph PLUGIN["Plugin - self-contained unit"]
         direction TB
 
         subgraph META[".claude-plugin/"]
@@ -611,23 +611,23 @@ graph TD
   <div class="diagram-card">
     <div class="mermaid">
 graph TB
-    subgraph USER["👤 User Layer"]
+    subgraph USER["User Layer"]
         U[User Intent / Natural Language]
     end
 
-    subgraph ROUTER["🧠 Claude Router"]
+    subgraph ROUTER["Claude Router"]
         R[Intent Matching Engine<br/><i>Matches utterance to skill description</i>]
         PM[Plugin Manifest<br/><i>.remote-plugins/manifest.json</i>]
         SKM[Skills Manifest<br/><i>.skills/manifest.json</i>]
     end
 
-    subgraph MGMT["🔧 Plugin Management Layer"]
+    subgraph MGMT["Plugin Management Layer"]
         direction LR
         CREATE["create-cowork-plugin<br/><i>5-phase guided creation</i>"]
-        CUSTOM["cowork-plugin-customizer<br/><i>~~ placeholder replacement</i><br/><i>MCP discovery & connect</i>"]
+        CUSTOM["cowork-plugin-customizer<br/><i>placeholder replacement</i><br/><i>MCP discovery and connect</i>"]
     end
 
-    subgraph DOMAIN["📚 Domain Plugin Layer"]
+    subgraph DOMAIN["Domain Plugin Layer"]
         direction TB
 
         subgraph ENG["Engineering (v1.2.0)"]
@@ -669,7 +669,7 @@ graph TB
         end
     end
 
-    subgraph BUILTIN["🛠 Built-in Skills"]
+    subgraph BUILTIN["Built-in Skills"]
         B1[pdf]
         B2[xlsx]
         B3[pptx]
@@ -678,7 +678,7 @@ graph TB
         B6[skill-creator]
     end
 
-    subgraph MCPL["🌐 MCP Server Layer (Shared)"]
+    subgraph MCPL["MCP Server Layer - Shared"]
         direction LR
         MS[Slack]
         MG[GitHub]
@@ -732,16 +732,16 @@ graph TB
   <div class="diagram-card">
     <div class="mermaid">
 graph LR
-    subgraph SKILLS["Skills Reference (tool-agnostic)"]
-        S1["~~source control"]
-        S2["~~project tracker"]
-        S3["~~chat"]
-        S4["~~monitoring"]
-        S5["~~incident management"]
-        S6["~~documents"]
-        S7["~~email"]
-        S8["~~design"]
-        S9["~~CI/CD"]
+    subgraph SKILLS["Skills Reference - tool-agnostic tokens"]
+        S1["source control"]
+        S2["project tracker"]
+        S3["chat"]
+        S4["monitoring"]
+        S5["incident management"]
+        S6["documents"]
+        S7["email"]
+        S8["design"]
+        S9["CI/CD"]
     end
 
     subgraph CONNECTORS["CONNECTORS.md (mapping layer)"]
@@ -825,15 +825,15 @@ graph TB
     subgraph PRIMITIVES["Copilot Agentic Primitives"]
         direction TB
 
-        subgraph SK["🎯 SKILLS — Domain Knowledge + Workflows"]
+        subgraph SK["SKILLS - Domain Knowledge + Workflows"]
             SK1["Trigger: description matching<br/>from user utterance"]
             SK2["Structure: YAML frontmatter<br/>+ imperative body"]
-            SK3["Disclosure: metadata → body<br/>→ references (3 levels)"]
+            SK3["Disclosure: metadata, body,<br/>then references (3 levels)"]
             SK4["Modes: standalone / supercharged"]
             SK5["Config: skills/name/SKILL.md"]
         end
 
-        subgraph AG["🤖 AGENTS — Autonomous Sub-processes"]
+        subgraph AG["AGENTS - Autonomous Sub-processes"]
             AG1["Trigger: example blocks<br/>with conditions"]
             AG2["Execution: multi-step,<br/>tool-calling loops"]
             AG3["Config: model override<br/>(sonnet/opus/haiku)"]
@@ -841,14 +841,14 @@ graph TB
             AG5["Config: agents/name.md"]
         end
 
-        subgraph HK["⚡ HOOKS — Lifecycle Interceptors"]
+        subgraph HK["HOOKS - Lifecycle Interceptors"]
             HK1["Events: PreToolUse,<br/>PostToolUse, Stop,<br/>SessionStart, etc."]
             HK2["Types: prompt-based<br/>(LLM) or command-based<br/>(deterministic)"]
             HK3["Scope: filter by<br/>tool name pattern"]
             HK4["Config: hooks/hooks.json"]
         end
 
-        subgraph MC["🌐 MCP SERVERS — External Integrations"]
+        subgraph MC["MCP SERVERS - External Integrations"]
             MC1["Transport: HTTP, SSE,<br/>or stdio"]
             MC2["Auth: OAuth via<br/>suggest_connectors()"]
             MC3["Discovery: search_mcp_registry<br/>by category keywords"]
@@ -864,7 +864,7 @@ graph TB
 
     subgraph COMPOSE["Composition Model"]
         CP1["plugin.json declares<br/>which primitives are included"]
-        CP2["CONNECTORS.md maps<br/>~~categories → MCP servers"]
+        CP2["CONNECTORS.md maps<br/>categories to MCP servers"]
         CP3["${CLAUDE_PLUGIN_ROOT}<br/>enables portable paths"]
     end
 
