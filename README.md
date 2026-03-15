@@ -90,6 +90,8 @@ Skills encapsulate discrete behaviors. Agents call skills by name; swapping a sk
 | `uwf-adr-300` | Creates high-rigor ADRs at `./docs/adr/ADR-####-<slug>.md` using a 300-point checklist covering security, ops, compliance, and testability. | — |
 | `uwf-cbs` | Blueprint stage behavior: synthesizes First-phase outputs into the uwf-cbs SQLite database (components, interfaces, dependencies, sequencing, constraints) and initializes the uwf-br Build Record. Used by `uwf-core-blueprint`. | — |
 | `uwf-local-tracking` | Manages work item state using the local filesystem (`./tmp/state/.../open/`, `active/`, `closed/`). | Replace with `uwf-github-track` to use GitHub Issues instead. |
+| `uwf-review` | Shared review infrastructure: SQLite-backed findings DB, script commands, fix-loop protocol, severity/verdict rules. **Deprecated as a standalone skill** — loaded as a shared dependency by `uwf-reviewer`. | — |
+| `uwf-reviewer` | Archetype-aware reviewer skill loaded by `uwf-project_manager-reviewer` (`Persona: pm`) and `uwf-sw_dev-reviewer` (`Persona: dev`). Each persona activates a distinct criteria checklist, scope, output format, and escalation path. | — |
 | `uwf-review-to-issues` | Parses prioritized review or audit tables and creates ungroomed backlog items in `./tmp/state/ungroomed/open/`. | — |
 | `uwf-risk-planner` | Produces a project-level risk register (`{role}-risk-plan.md`) covering schedule, dependency, technical-debt, and external risks. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. Used by `uwf-core-risk-planner`. | — |
 | `uwf-state-manager` | Authoritative source for mutating `./docs/uwf-state.json` and managing phase lifecycle transitions. | — |

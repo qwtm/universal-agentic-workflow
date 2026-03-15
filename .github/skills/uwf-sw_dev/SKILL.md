@@ -30,7 +30,7 @@ Persona skill for driving individual work items (issues) from intake through imp
 | `uwf-core-blueprint` | Synthesize First-phase outputs into uwf-cbs and initialize uwf-br |
 | `uwf-sw_dev-work-planner` | Implementation plan with steps and associated tests |
 | `uwf-issue-implementer` | Execute the work plan |
-| `uwf-sw_dev-reviewer` | Review implementation; produce fix list or clean bill |
+| `uwf-sw_dev-reviewer` | Review implementation; produce fix list or clean bill — loads `uwf-reviewer` skill with `Persona: dev` |
 | `uwf-core-technical-writer` | Review and update documentation from changed artifacts |
 | `uwf-core-acceptance` | Run acceptance gate checklist |
 | `uwf-core-refinement` | Groom user stories to production-ready standard before acceptance |

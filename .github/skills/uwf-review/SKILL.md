@@ -1,7 +1,15 @@
 ---
 name: uwf-review
-description: "Quality/security review with SQLite-backed findings and fix-loop gate support."
+description: "Shared review infrastructure: SQLite-backed findings, script commands, fix-loop gate support. Loaded as a dependency by uwf-reviewer; do not load directly in new agents."
+deprecated: true
+superseded_by: uwf-reviewer
 ---
+
+> **Deprecated — shared infrastructure only.**
+> Archetype-specific reviewer agents must load `.github/skills/uwf-reviewer/SKILL.md`
+> (with `Persona: pm` or `Persona: dev`) and reference this file only for the
+> shared script commands, DB schema, and fix-loop protocol documented below.
+> Do not load this file as a standalone reviewer skill in new agents.
 
 # UWF Review Skill
 

@@ -45,19 +45,19 @@ Every workflow begins here regardless of archetype. The goal is situational awar
 
 #### Archetype: Project Manager
 
-| Stage | Agent Profile | Purpose |
-|---|---|---|
-| **Intake (PM)** | `uwf-pm-intake.agent.md` | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
-| **Timeline Planner** | `uwf-timeline-planner.agent.md` | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact. |
-| **Reviewer** | `uwf-pm-reviewer.agent.md` | Validate plan completeness: all stories assigned, dependencies resolved, risk signals addressed, NFRs covered. |
+| Stage | Agent Profile | Skill (persona) | Purpose |
+|---|---|---|---|
+| **Intake (PM)** | `uwf-pm-intake.agent.md` | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
+| **Timeline Planner** | `uwf-timeline-planner.agent.md` | — | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact. |
+| **Reviewer** | `uwf-pm-reviewer.agent.md` | `uwf-reviewer` (`Persona: pm`) | Validate plan completeness: timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. |
 
 #### Archetype: Software Developer
 
-| Stage | Agent Profile | Purpose |
-|---|---|---|
-| **Intake (SWE)** | `uwf-swe-intake.agent.md` | Decompose requirements into implementation tasks. Identify files, modules, and interfaces to touch. |
-| **Work Planner** | `uwf-work-planner.agent.md` | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
-| **Reviewer** | `uwf-swe-reviewer.agent.md` | Code-level review gate: SOLID compliance, test coverage, security checks, ADR conformance. |
+| Stage | Agent Profile | Skill (persona) | Purpose |
+|---|---|---|---|
+| **Intake (SWE)** | `uwf-swe-intake.agent.md` | — | Decompose requirements into implementation tasks. Identify files, modules, and interfaces to touch. |
+| **Work Planner** | `uwf-work-planner.agent.md` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
+| **Reviewer** | `uwf-swe-reviewer.agent.md` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
 
 ### Phase 3 — Closure (shared across all archetypes)
 
