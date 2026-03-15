@@ -46,6 +46,57 @@ intake
                                                                Phase 3 (shared)
 ```
 
+```mermaid
+flowchart TD
+    intake([intake])
+    intake -->|Greenfield| phase1
+
+    intake -->|Brownfield| prephase
+
+    subgraph prephase["Pre-Phase — forensic-analyst archetype"]
+        direction TB
+        ra[repo-audit] --> ah[artifact-harvest]
+        ah --> ii[intent-inference]
+        ii --> cs[confidence-score]
+        cs --> gr[gap-report]
+        gr --> review([human review])
+        review --> fbr[(forensic-br.json\nconfidence-scored)]
+    end
+
+    fbr --> phase1
+
+    subgraph phase1["Phase 1 — Foundation (shared)"]
+        direction TB
+        p1a[discovery] --> p1b[requirements]
+        p1b --> p1c[adr]
+        p1c --> p1d[risk-planner]
+        p1d --> p1e[security-planner]
+        p1e --> p1f[test-planner]
+        p1f --> p1g[blueprint]
+    end
+
+    phase1 --> phase2
+
+    subgraph phase2["Phase 2 — Execution (archetype-specific)"]
+        direction TB
+        pm["Project Manager\ntimeline-planner → reviewer"]
+        swe["Software Developer\nwork-planner → reviewer"]
+    end
+
+    phase2 --> phase3
+
+    subgraph phase3["Phase 3 — Closure (shared)"]
+        direction TB
+        p3a[project-tracking] --> p3b["refinement *"]
+        p3b --> p3c[acceptance]
+        p3c --> p3d[snapshot]
+        p3d --> p3e[retro]
+    end
+
+    note1["* refinement role differs:\nbrownfield promotes inferred-weak → confirmed;\ngreenfield grooms story fields"]
+    note1 -.-> p3b
+```
+
 ### Brownfield Pre-Phase — Forensic Analysis
 
 Runs **before Phase 1** on brownfield projects only. Governed by the `uwf-forensic-analyst` skill (`.github/skills/uwf-forensic-analyst/SKILL.md`).
@@ -79,6 +130,21 @@ Every workflow begins here. For greenfield projects, Phase 1 starts from scratch
 | **Test Planner** | `uwf-core-test-planner.agent.md` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests, test data requirements. |
 | **Blueprint** | `uwf-core-blueprint.agent.md` | Synthesize all First-phase outputs into the Canonical Build Spec (uwf-cbs) SQLite database and initialize the Build Record (uwf-br) strata 0–4. Produces the machine-readable handoff artifact from Phase 1 to Phase 2. |
 
+#### Phase 1 Brownfield Behavior — Per-Stage
+
+When `forensic-br.json` is present (brownfield mode), each Phase 1 stage applies the following additional behavior:
+
+| Stage | Brownfield Behavior |
+|---|---|
+| **Intake** | Reads `forensic-br.json` strata 0 (project-scope) and 3 (constraints). Validates the pre-phase is complete (`gap_report_reviewed: true`). Passes the provisional Build Record path to all downstream stages. |
+| **Discovery** | Reads all `confirmed` and `inferred-strong` entries as verified prior work — does not re-derive them. Flags all `inferred-weak` entries for re-examination. Treats `gap` entries as known unknowns to investigate. Appends new findings rather than overwriting the provisional baseline. |
+| **Requirements** | Promotes `confirmed` and `inferred-strong` entries from `forensic-br.json` stratum 1 (requirements) directly to `refined` status. Challenges every `inferred-weak` entry: if Phase 1 evidence confirms it, promote; if not, flag for human resolution. Does not generate stories for `gap` entries — those remain blocked until promoted. |
+| **ADR** | Reads existing architectural decisions from `forensic-br.json` stratum 2 (decisions). For each `confirmed` decision, creates a formal ADR and marks it `Supersedes: forensic-inference`. For each `inferred-strong` or `inferred-weak` decision, creates a draft ADR with a `Confidence:` field noting the original tier and evidence. Does not create ADRs for `gap` decisions — flags them as unresolved architectural unknowns. |
+| **Risk Planner** | Adds `inferred-weak` requirements and unresolved `gap` entries as additional risk inputs — each represents scope uncertainty that may affect schedule and dependency planning. |
+| **Security Planner** | Reads inferred security constraints from `forensic-br.json` stratum 3 (constraints). Validates that inferred constraints are confirmed or explicitly superseded before the security plan closes. |
+| **Test Planner** | Reads observed test types from the artifact harvest (stratum 4 of `forensic-br.json`) and uses them as the baseline test coverage floor. Strategy must cover all test types already present in the codebase and extend them as needed. |
+| **Blueprint** | Merges `forensic-br.json` strata into the `uwf-br` Build Record. Carries `confidence` and `evidence` fields through to `uwf-br` so downstream stages and the `uwf-drs` snapshot preserve the full audit trail. |
+
 ### Phase 2 — Execution (archetype-specific, pick one)
 
 #### Archetype: Project Manager
@@ -106,6 +172,19 @@ Every workflow begins here. For greenfield projects, Phase 1 starts from scratch
 | **Acceptance** | `uwf-acceptance.agent.md` | Verify acceptance criteria are met. Run traceability audit: story → ADR → code → test. Flag gaps. |
 | **Snapshot** | `uwf-core-snapshot.agent.md` | Produce `uwf-drs` — the Deterministic Reconstruction Spec. Serialize accepted state with pinned versions, resolved dependency graph, executed build sequence, full ADR set, gap log, and divergence log. Close `uwf-br` layer 5 and append a closure entry to `uwf-changelog`. |
 | **Retro** | `uwf-retro.agent.md` | Post-mortem on the workflow execution. Capture what worked, what didn't, and improvement actions for future iterations. |
+
+#### Refinement Confidence Promotion Gate (Brownfield Only)
+
+On brownfield projects, Refinement acts as the **confidence promotion gate** in addition to its standard field-completeness and quality-control checks. Full behavior is defined in `.github/skills/uwf-refinement/SKILL.md`.
+
+| Confidence Tier at Refinement Entry | Required Action |
+|---|---|
+| `confirmed` | No additional gate. Story proceeds to normal field-completeness and quality checks. |
+| `inferred-strong` | Story proceeds to normal checks. If field-completeness or quality checks fail, the failure is recorded against the story. |
+| `inferred-weak` | Story is **blocked** unless the human reviewer promotes it to `confirmed` (by providing a traceable source) or accepts it as `inferred-strong` (by citing a second independent artifact). Stories that remain `inferred-weak` at the end of the Refinement pass are set to `blocked` status and cannot proceed to Acceptance. |
+| `gap` | Story **cannot pass Refinement**. It must be resolved (promoted to any higher tier by providing evidence) or closed (removed from scope) before Refinement can complete. Refinement is blocked until all `gap` stories are resolved or closed. |
+
+The Refinement Report (`{role}-refinement-report.md`) includes a Brownfield Gap Resolution Table listing every `inferred-weak` and `gap` story with the resolution action taken.
 
 ---
 
