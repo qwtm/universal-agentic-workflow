@@ -1,7 +1,7 @@
 ---
 name: uwf-project_manager-reviewer
 description: "PM-archetype quality review. Validates timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. Requests fixes or hands off to acceptance."
-tools: ["agent", "todo", "search", "read"]
+tools: ["agent", "todo", "search", "read", "execute", "edit"]
 user-invokable: false
 ---
 # Project Review Stage

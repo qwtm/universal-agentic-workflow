@@ -1,6 +1,6 @@
 ---
 name: uwf-reviewer
-description: "Archetype-aware reviewer skill. Activate with --persona pm (project-manager) or --persona dev (software-developer). Defines review scope, criteria checklist, output format, escalation handling, and exit criteria per persona."
+description: "Archetype-aware reviewer skill. Loaded by archetype-specific reviewer agents that declare 'Persona: pm' or 'Persona: dev' in their instruction line. Defines review scope, criteria checklist, output format, escalation handling, and exit criteria per persona."
 ---
 
 # UWF Reviewer Skill
@@ -25,11 +25,13 @@ sections are inactive and must be ignored.
 
 ## Shared Constraints — Apply to Both Personas
 
-- The reviewer agent is **read-only**. Do NOT use `edit` or `execute` tools.
 - Do NOT prescribe fixes. Report observations only — state what is wrong,
   not how to correct it.
 - Do NOT review artifacts outside the scope declared for the active persona.
 - Do NOT invent content for missing files. Report absence as a `critical` finding.
+- `execute` is permitted **only** for running `reviews.mjs` script commands.
+- `edit` is permitted **only** for writing the review output artifact
+  (`{output_path}/*-review.md`). Do NOT edit any other files.
 
 ---
 

@@ -232,6 +232,9 @@ stages:
     inputs:
       - "{{output_path}}/issues-backlog.md"
       - "{{output_path}}/project-roadmap.md"
+      - "{{output_path}}/project-intake.md"
+      - "{{output_path}}/project-requirements.md"
+      - "{{output_path}}/project-risk-plan.md"
     outputs:
       - "{{output_path}}/project-review.md"
     gated: true

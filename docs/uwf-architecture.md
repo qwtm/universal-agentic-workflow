@@ -32,10 +32,10 @@ Every workflow begins here regardless of archetype. The goal is situational awar
 
 | Stage | Agent Profile | Purpose |
 |---|---|---|
-| **Intake** | `uwf-intake.agent.md` | Parse the request. Classify scope (task, feature, epic, project). Identify actors, constraints, and initial domain terms. |
-| **Discovery** | `uwf-discovery.agent.md` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. Produce a lay-of-the-land summary. |
-| **Requirements** | `uwf-requirements.agent.md` | Elicit and structure functional + non-functional requirements. Output structured user stories (see Story Schema below). |
-| **ADR** | `uwf-adr.agent.md` | Capture architectural decisions using a standard ADR template. Link each decision to the requirement(s) it resolves. |
+| **Intake** | `uwf-sw_dev-intake.agent.md` / `uwf-project_manager-intake.agent.md` | Parse the request. Classify scope (task, feature, epic, project). Identify actors, constraints, and initial domain terms. |
+| **Discovery** | `uwf-core-discovery.agent.md` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. Produce a lay-of-the-land summary. |
+| **Requirements** | `uwf-core-requirements.agent.md` | Elicit and structure functional + non-functional requirements. Output structured user stories (see Story Schema below). |
+| **ADR** | `uwf-core-adr.agent.md` | Capture architectural decisions using a standard ADR template. Link each decision to the requirement(s) it resolves. |
 | **Risk Planner** | `uwf-core-risk-planner.agent.md` | Identify and document project-level execution risks: schedule, dependency, technical-debt, and external. Produce a risk register. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. Feeds slippage risk signals into user stories for the Refinement stage. |
 | **Security Planner** | `uwf-core-security-plan.agent.md` | Threat model the proposed scope. Identify attack surfaces, data classification, auth/authz requirements. Output security stories or constraints. |
 | **Test Planner** | `uwf-core-test-planner.agent.md` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests, test data requirements. |
@@ -47,27 +47,27 @@ Every workflow begins here regardless of archetype. The goal is situational awar
 
 | Stage | Agent Profile | Skill (persona) | Purpose |
 |---|---|---|---|
-| **Intake (PM)** | `uwf-pm-intake.agent.md` | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
-| **Timeline Planner** | `uwf-timeline-planner.agent.md` | — | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact. |
-| **Reviewer** | `uwf-pm-reviewer.agent.md` | `uwf-reviewer` (`Persona: pm`) | Validate plan completeness: timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. |
+| **Intake (PM)** | `uwf-project_manager-intake.agent.md` | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
+| **Timeline Planner** | `uwf-project_manager-timeline-planner.agent.md` | — | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact. |
+| **Reviewer** | `uwf-project_manager-reviewer.agent.md` | `uwf-reviewer` (`Persona: pm`) | Validate plan completeness: timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. |
 
 #### Archetype: Software Developer
 
 | Stage | Agent Profile | Skill (persona) | Purpose |
 |---|---|---|---|
-| **Intake (SWE)** | `uwf-swe-intake.agent.md` | — | Decompose requirements into implementation tasks. Identify files, modules, and interfaces to touch. |
-| **Work Planner** | `uwf-work-planner.agent.md` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
-| **Reviewer** | `uwf-swe-reviewer.agent.md` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
+| **Intake (SWE)** | `uwf-sw_dev-intake.agent.md` | — | Decompose requirements into implementation tasks. Identify files, modules, and interfaces to touch. |
+| **Work Planner** | `uwf-sw_dev-work-planner.agent.md` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
+| **Reviewer** | `uwf-sw_dev-reviewer.agent.md` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
 
 ### Phase 3 — Closure (shared across all archetypes)
 
 | Stage | Agent Profile | Purpose |
 |---|---|---|
-| **Project Tracking** | `uwf-tracking.agent.md` | Populate the local tracking cache. Sync story status, update traceability matrix, append changelog. |
-| **Refinement** | `uwf-refinement.agent.md` | Groom unrefined stories to meet the quality standard (see Quality Controls below). Reject stories that fail completeness checks. |
-| **Acceptance** | `uwf-acceptance.agent.md` | Verify acceptance criteria are met. Run traceability audit: story → ADR → code → test. Flag gaps. |
+| **Project Tracking** | `uwf-core-project-tracking.agent.md` | Populate the local tracking cache. Sync story status, update traceability matrix, append changelog. |
+| **Refinement** | `uwf-core-refinement.agent.md` | Groom unrefined stories to meet the quality standard (see Quality Controls below). Reject stories that fail completeness checks. |
+| **Acceptance** | `uwf-core-acceptance.agent.md` | Verify acceptance criteria are met. Run traceability audit: story → ADR → code → test. Flag gaps. |
 | **Snapshot** | `uwf-core-snapshot.agent.md` | Produce `uwf-drs` — the Deterministic Reconstruction Spec. Serialize accepted state with pinned versions, resolved dependency graph, executed build sequence, full ADR set, gap log, and divergence log. Close `uwf-br` layer 5 and append a closure entry to `uwf-changelog`. |
-| **Retro** | `uwf-retro.agent.md` | Post-mortem on the workflow execution. Capture what worked, what didn't, and improvement actions for future iterations. |
+| **Retro** | `uwf-core-retro.agent.md` | Post-mortem on the workflow execution. Capture what worked, what didn't, and improvement actions for future iterations. |
 
 ---
 

@@ -219,6 +219,8 @@ stages:
     run_as_subagent: true
     inputs:
       - "{{output_path}}/issues-plan.md"
+      - "{{output_path}}/issues-test-plan.md"
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
     outputs:
       - "{{output_path}}/issues-review.md"
     gated: true

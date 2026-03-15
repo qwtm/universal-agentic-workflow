@@ -52,7 +52,7 @@ Generic agents reusable by any orchestrator, regardless of whether you are runni
 | `uwf-core-retro.agent.md` | Runs end-of-cycle retrospectives and surfaces workflow or implementation improvements. |
 | `uwf-core-risk-planner.agent.md` | Produces a project-level risk register covering schedule, dependency, technical-debt, and external risks via the `uwf-risk-planner` skill. Runs after `adr` and before `security-plan`. |
 | `uwf-core-security-plan.agent.md` | Generates threat models and security control plans via the `uwf-threat-model` skill. |
-| `uwf-core-tehcnical-writer.agent.md` | Promotes ephemeral `tmp/` artifacts into permanent `./docs/` documentation and files gaps as backlog items. |
+| `uwf-core-technical-writer.agent.md` | Promotes ephemeral `tmp/` artifacts into permanent `./docs/` documentation and files gaps as backlog items. |
 | `uwf-core-test-planner.agent.md` | Defines test stubs, integration scenarios, and coverage targets before implementation begins. |
 | `uwf-core-blueprint.agent.md` | Synthesizes all First-phase outputs into the Canonical Build Spec (uwf-cbs) and initializes the Build Record (uwf-br) strata 0–4. Runs after `test-planner` as the final First-phase stage. |
 
@@ -62,7 +62,6 @@ Agents scoped to driving individual work items from intake through implementatio
 
 | Agent file | Responsibility |
 | :--- | :--- |
-| `uwf-sw_dev-orchestrator.agent.md` | Coordinates the full per-issue lifecycle: intake → discovery → test planning → implementation → review → acceptance. |
 | `uwf-sw_dev-intake.agent.md` | Scopes a single work item: goal, acceptance criteria, constraints, and explicit out-of-scope boundaries. |
 | `uwf-sw_dev-work-planner.agent.md` | Assembles upstream artifacts (tests, security controls, scope) into an ordered implementation plan. |
 | `uwf-issue-implementer.agent.md` | Executes code and infrastructure changes strictly against the approved plan and ADRs. |
@@ -74,7 +73,6 @@ Agents for macro-level work: scoping a new effort, building a roadmap, and scaff
 
 | Agent file | Responsibility |
 | :--- | :--- |
-| `uwf-project_manager-orchestrator.agent.md` | Coordinates the full project planning sequence: intake → discovery → requirements → timeline → backlog scaffold → hand-off. |
 | `uwf-project_manager-intake.agent.md` | Captures objectives, non-goals, stakeholders, success metrics, and the intended work-breakdown strategy. |
 | `uwf-project_manager-timeline-planner.agent.md` | Translates the project scope into a milestone/sprint/issue roadmap and creates the `./tmp/state/` directory structure. |
 | `uwf-project_manager-reviewer.agent.md` | Audits the macro plan for completeness and consistency before execution begins. |
@@ -107,8 +105,8 @@ Prompts are the human-facing triggers that start a workflow run.
 
 | Prompt | Triggers | Use when |
 | :--- | :--- | :--- |
-| `uwf-start-project_manager-planning.md` | `uwf-project_manager-orchestrator` | Starting a new product, feature, or architectural effort from scratch. |
-| `uwf-start-development-with-issue.md` | `uwf-sw_dev-orchestrator` | Picking up a groomed, ready-to-implement work item and driving it to completion. |
+| `uwf-start-project-planning.prompt.md` | `uwf-core-orchestrator` (workflow: `project_manager`) | Starting a new product, feature, or architectural effort from scratch. |
+| `uwf-start-sw-dev-issue.prompt.md` | `uwf-core-orchestrator` (workflow: `sw_dev`) | Picking up a groomed work item and driving it through implementation, review, and acceptance. |
 
 ---
 
