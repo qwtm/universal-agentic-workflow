@@ -124,14 +124,14 @@ For each logical component or service in the design, produce one entry in this f
 | Purpose | One sentence: what this component does and why it exists. |
 | Technology | Primary technology or runtime (e.g., Node.js 20, PostgreSQL 15). |
 | Requirement refs | Comma-separated requirement IDs from `design-requirements.md` that this component satisfies. |
-| ADR refs | Comma-separated ADR IDs that govern this component's design. Use `No ADR — decision pending` if no ADR exists yet; add `blocker: true` on a new line below the table to signal a blocking gap to the reviewer. |
+| ADR refs | Comma-separated ADR IDs that govern this component's design. Use `No ADR — decision pending` if no ADR exists yet; add `warning: true` on a new line below the table to signal a gap that needs reviewer attention. |
 ```
 
 Constraints:
 - Every component must have at least one requirement ref.
-- Every component must have at least one ADR ref, or carry the note `No ADR — decision pending` with a blocker flag.
+- Every component must have at least one ADR ref, or carry the note `No ADR — decision pending` with a `warning: true` flag.
 - A component with `Type: external` must be documented even if it cannot be changed.
-- A component that carries `No ADR — decision pending` and `blocker: true` must be surfaced as a `minor` warning in the SDD's `## Validation Warnings` section.
+- A component that carries `No ADR — decision pending` and `warning: true` must be surfaced as a `minor` warning in the SDD's `## Validation Warnings` section.
 
 #### Section 3 — Interface Contracts
 
@@ -271,7 +271,7 @@ Constraints:
    - Every ADR has an elaboration with at least one rejected alternative.
    - Every design element appears in the traceability matrix with a source requirement.
 4. Write the completed SDD to `{output_path}/design-sdd.md`.
-5. Report any validation failures as inline warnings in the SDD under a `## Validation Warnings` section, clearly marked. Do not silently omit incomplete entries.
+5. Report any validation failures as inline warnings in the SDD under a `### Validation Warnings` subsection within Section 1 (Overview), clearly marked. Do not silently omit incomplete entries.
 
 ### Error Handling
 
@@ -286,7 +286,8 @@ Constraints:
 ### Exit Criteria
 
 1. `{output_path}/design-sdd.md` exists and is non-empty.
-2. `design-sdd.md` contains all eight required section headings.
+2. `design-sdd.md` contains all required top-level section headings defined in the SDD schema above.
 3. `design-sdd.md` contains `## Components`, `## Interface Contracts`, `## Non-Functional Requirements`, and `## Traceability`.
-4. No section is empty.
-5. No component entry has an empty `Requirement refs` field without a documented explanation.
+4. When any validation failures are detected, Section 1 (Overview) includes a `### Validation Warnings` subsection summarizing them.
+5. No section is empty.
+6. No component entry has an empty `Requirement refs` field without a documented explanation.

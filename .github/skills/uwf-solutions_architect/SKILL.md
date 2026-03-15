@@ -20,7 +20,7 @@ Persona skill for architecture-first engagements: designing platforms, evaluatin
 | Subagent | Role |
 |---|---|
 | `uwf-core-project-tracking` | Phase transitions and state management |
-| `uwf-solutions_architect-design-planner` | Capture architectural goal, constraints, and engagement scope |
+| `uwf-solutions_architect-design-planner` | Capture architectural goal, constraints, engagement scope, and produce the System Design Document (SDD) |
 | `uwf-core-discovery` | Inspect workspace; surface unknowns |
 | `uwf-core-requirements` | Produce PRD, NFRs, acceptance criteria |
 | `uwf-core-adr` | Create architectural decision records |
@@ -28,7 +28,6 @@ Persona skill for architecture-first engagements: designing platforms, evaluatin
 | `uwf-core-security-plan` | Threat model and security controls |
 | `uwf-core-test-planner` | Test strategy, stubs, coverage targets |
 | `uwf-core-blueprint` | Synthesize First-phase outputs into uwf-cbs and initialize uwf-br |
-| `uwf-solutions_architect-design-planner` | Produce the System Design Document (SDD) |
 | `uwf-solutions_architect-reviewer` | Architecture review gate — loads `uwf-reviewer` skill with `Persona: arch` |
 | `uwf-core-acceptance` | Final acceptance gate checks |
 | `uwf-core-snapshot` | Produce uwf-drs; close uwf-br layer 5; append changelog closure entry |

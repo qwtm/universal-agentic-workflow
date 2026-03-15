@@ -11,14 +11,11 @@ declares its persona in the first line of its instructions:
 ```
 Persona: pm   # project-manager archetype
 Persona: dev  # software-developer archetype
+Persona: arch # solutions-architect archetype
 ```
 
 Read **only** the section that matches the declared persona. All other persona
 sections are inactive and must be ignored.
-
-```
-Persona: arch  # solutions-architect archetype
-```
 
 > **Shared infrastructure:** Script commands, DB schema, severity values,
 > verdict values, and the fix-loop protocol are all defined in
@@ -27,7 +24,7 @@ Persona: arch  # solutions-architect archetype
 
 ---
 
-## Shared Constraints — Apply to Both Personas
+## Shared Constraints — Apply to All Personas
 
 - The reviewer agent is **read-only**. Do NOT use `edit` or `execute` tools.
 - Do NOT prescribe fixes. Report observations only — state what is wrong,

@@ -46,6 +46,14 @@ stages:
           path: "{{output_path}}/design-intake.md"
           text: "Constraints"
           label: "design-intake.md contains Constraints"
+        - type: require_contains
+          path: "{{output_path}}/design-intake.md"
+          text: "Stakeholders"
+          label: "design-intake.md contains Stakeholders"
+        - type: require_contains
+          path: "{{output_path}}/design-intake.md"
+          text: "Engagement Type"
+          label: "design-intake.md contains Engagement Type"
 
   - name: discovery
     agent: uwf-core-discovery
@@ -90,11 +98,6 @@ stages:
     outputs:
       - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
     gated: true
-    conditional: true
-    condition:
-      type: file_contains
-      path: "{{output_path}}/design-requirements.md"
-      text: "ADR:"
     gate:
       checks:
         - type: require_files_with_prefix
