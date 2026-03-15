@@ -68,7 +68,7 @@ Provide the repository path or URL when prompted. See [Brownfield Projects](#bro
 │   ├── uwf-orchestration-engine/   # Core engine: gate enforcement, stage loop, runSubagent contract
 │   ├── uwf-sw_dev/                 # Persona: software developer workflow (stages.yaml + run.mjs)
 │   ├── uwf-project_manager/        # Persona: project manager workflow (stages.yaml + run.mjs)
-│   ├── uwf-solutions_architect/    # Persona: solutions architect workflow (stages.yaml + run.mjs)
+│   ├── uwf-solutions_architect/    # Persona: solutions architect workflow & archetype (stages.yaml + run.mjs)
 │   ├── uwf-forensic-analyst/       # Persona: brownfield forensic pre-phase (stages.yaml + run.mjs)
 │   ├── uwf-adr/                    # ADR creation with 300-point checklist (adrs.mjs)
 │   ├── uwf-cbs/                    # Blueprint stage: Canonical Build Spec DB
@@ -81,7 +81,6 @@ Provide the repository path or URL when prompted. See [Brownfield Projects](#bro
 │   ├── uwf-reviewer/               # Archetype-aware reviewer (pm / dev / arch personas)
 │   ├── uwf-risk-planner/           # Risk register behavior
 │   ├── uwf-snapshot/               # Snapshot stage: uwf-drs producer
-│   ├── uwf-solutions_architect/    # Solutions-architect archetype
 │   ├── uwf-state-manager/          # Workflow state (state.mjs)
 │   └── uwf-threat-model/           # STRIDE threat model templates
 ├── prompts/              # Entry-point prompts to trigger a workflow run
@@ -105,7 +104,7 @@ uwf-companion/            # VS Code extension — live UWF dashboard (see below)
 - **Small, reviewable changes.** Broad rewrites are prohibited unless explicitly requested.
 - **Template preservation.** `./docs/workflow-output-templates/` are read-only examples. Active artifacts live in `tmp/workflow-artifacts/`.
 - **No secrets in the repo.** If credentials are encountered, execution stops and secure storage is recommended.
-- **Unplanned work is not silently implemented.** It is filed as a spike under `./tmp/state/ungroomed/open/` for triage.
+- **Unplanned work is not silently implemented.** It is tracked as an ungroomed spike in the default tracking backend (see `.github/skills/uwf-local-tracking/SKILL.md`) and surfaced for triage.
 
 ---
 
@@ -273,7 +272,7 @@ When the target is one or more **existing repositories** rather than a new proje
 ### When to Run the Pre-Phase
 
 Activate `workflow=forensic-analyst` when:
-- The user supplies existing repository paths at orchestrator intake.
+- The user supplies existing repository paths or URLs at orchestrator intake.
 - No formal requirements baseline, ADR set, or design documents exist for the existing codebase.
 
 Do **not** run it when:

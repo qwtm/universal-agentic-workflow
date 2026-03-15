@@ -331,7 +331,6 @@ universal-agentic-workflow/
 │   │   ├── uwf-cbs/                            # Blueprint stage (cbs.mjs)
 │   │   ├── uwf-discovery/                      # Discovery DB (discovery.mjs)
 │   │   ├── uwf-local-tracking/                 # Issue tracking DB (issues.mjs)
-│   │   ├── uwf-orchestration-engine/           # Stage tracker DB (stage-tracker.mjs)
 │   │   ├── uwf-question-protocol/              # Q&A protocol (questions.mjs)
 │   │   ├── uwf-refinement/                     # Story quality gate behavior
 │   │   ├── uwf-requirements/                   # Requirements DB (requirements.mjs)
@@ -339,7 +338,7 @@ universal-agentic-workflow/
 │   │   ├── uwf-reviewer/                       # Archetype-aware reviewer (pm/dev/arch)
 │   │   ├── uwf-risk-planner/                   # Risk register behavior
 │   │   ├── uwf-snapshot/                       # Snapshot stage behavior
-│   │   ├── uwf-solutions_architect/            # Solutions-architect archetype
+│   │   ├── uwf-solutions_architect/            # Solutions-architect archetype (persona + shared skill in same directory)
 │   │   ├── uwf-state-manager/                  # Workflow state (state.mjs)
 │   │   └── uwf-threat-model/                   # STRIDE threat model templates
 │   ├── prompts/

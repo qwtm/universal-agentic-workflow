@@ -131,7 +131,7 @@ stages:
 | `require_contains` | `path`, `text` | File contains the given string |
 | `require_files_with_prefix` | `dir`, `prefix` | At least one file in `dir` starts with `prefix` |
 | `require_file_matching_pattern` | `dir`, `pattern` | At least one file in `dir` matches the regex |
-| `run_script` | `cmd` (or `command`) | Script exits 0 |
+| `run_script` | `cmd` | Script exits 0 |
 
 **Conditional stages** auto-pass when the condition evaluates to false:
 
