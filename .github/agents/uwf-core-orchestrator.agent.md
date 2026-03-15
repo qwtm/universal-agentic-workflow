@@ -30,6 +30,11 @@ agents:
   - uwf-sw_dev-reviewer
   - uwf-issue-implementer
   - uwf-core-project-tracking
+  - uwf-forensic-analyst-repo-audit
+  - uwf-forensic-analyst-artifact-harvest
+  - uwf-forensic-analyst-intent-inference
+  - uwf-forensic-analyst-confidence-score
+  - uwf-forensic-analyst-gap-report
 ---
 
 # UWF Core Orchestrator

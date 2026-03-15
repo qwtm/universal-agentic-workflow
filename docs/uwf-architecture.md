@@ -26,9 +26,47 @@ The orchestrator is not a fixed persona. It assumes **archetypes** (implemented 
 
 ## Workflow Stages
 
+### Project Type: Greenfield vs Brownfield
+
+UWF supports two project types:
+
+- **Greenfield** — New project with no prior codebase. Workflow begins at Phase 1 directly.
+- **Brownfield** — Existing project (one or more repos) where intent was never formally recorded. Workflow begins at the Brownfield Pre-Phase, which runs before Phase 1 and produces a provisional Build Record (`uwf-br`) with confidence scores. Phase 1 then validates and hardens that baseline.
+
+```
+intake
+  ├── Greenfield ──────────────────────────────────────────────────────┐
+  │                                                                     ↓
+  └── Brownfield → Pre-Phase (forensic) → Provisional uwf-br → Phase 1 (shared)
+                     repo-audit                                         │
+                     artifact-harvest                                   ↓
+                     intent-inference                          Phase 2 (archetype)
+                     confidence-score                                   │
+                     gap-report → human review                          ↓
+                                                               Phase 3 (shared)
+```
+
+### Brownfield Pre-Phase — Forensic Analysis
+
+Runs **before Phase 1** on brownfield projects only. Governed by the `uwf-forensic-analyst` skill (`.github/skills/uwf-forensic-analyst/SKILL.md`).
+
+The fundamental challenge for brownfield projects is that intent was never recorded. Code exists, commits exist, tests exist — but the *why* behind decisions, the original requirements, the rejected alternatives, and the business rationale are missing. The pre-phase uses forensic analysis: observing what exists and inferring what was intended.
+
+| Stage | Agent Profile | Purpose |
+|---|---|---|
+| **Repo Audit** | `uwf-forensic-analyst-repo-audit.agent.md` | Enumerate all repos in scope, map service boundaries and seams, catalog tech stack per repo. |
+| **Artifact Harvest** | `uwf-forensic-analyst-artifact-harvest.agent.md` | Collect all available evidence: commits, tickets, docs, configs, CI/CD definitions, test suites, existing ADRs. |
+| **Intent Inference** | `uwf-forensic-analyst-intent-inference.agent.md` | Infer requirements and decisions from observed behavior and artifacts. Assign preliminary confidence to each entry. |
+| **Confidence Score** | `uwf-forensic-analyst-confidence-score.agent.md` | Formal scoring pass: assign tier (`confirmed`, `inferred-strong`, `inferred-weak`, `gap`) to every entry. Write provisional `forensic-br.json`. |
+| **Gap Report** | `uwf-forensic-analyst-gap-report.agent.md` | Surface all `gap` entries; produce the human-review document; block until every gap is resolved or accepted as out-of-scope. |
+
+**Output:** `forensic-br.json` — a provisional Build Record where every entry carries a confidence score. Handed to Phase 1 as its starting state.
+
+**Exit gate:** The pre-phase is complete only when `gap_report_reviewed: true` is set in `forensic-br.json`. This requires every `gap` entry to have a human-provided resolution or an explicit out-of-scope acceptance.
+
 ### Phase 1 — Foundation (shared across all archetypes)
 
-Every workflow begins here regardless of archetype. The goal is situational awareness and constraint capture.
+Every workflow begins here. For greenfield projects, Phase 1 starts from scratch. For brownfield projects, Phase 1 reads `forensic-br.json` as its starting state and validates or replaces provisional entries. The goal is situational awareness and constraint capture.
 
 | Stage | Agent Profile | Purpose |
 |---|---|---|
