@@ -1,0 +1,25 @@
+flowchart TD
+    A[Skill needs external tool] --> B{Tool already in<br/>.mcp.json?}
+
+    B -->|Yes| C{User authenticated<br/>with this MCP?}
+    C -->|Yes| D[Use MCP tools directly]
+    C -->|No| E["suggest_connectors()<br/>OAuth prompt to user"]
+    E --> F{User authorizes?}
+    F -->|Yes| D
+    F -->|No| G[Fall back to<br/>Standalone Mode]
+
+    B -->|No| H["search_mcp_registry()<br/>keywords from category mapping"]
+
+    H --> I{Registry has<br/>matching MCP?}
+
+    I -->|Yes| J["suggest_connectors()<br/>Present available MCPs to user"]
+    J --> K{User selects<br/>and authorizes?}
+    K -->|Yes| L[Update .mcp.json<br/>with server URL]
+    L --> D
+    K -->|No| G
+
+    I -->|No| M{Alternative tool<br/>in same category?}
+    M -->|Yes| H
+    M -->|No| G
+
+    G --> N[Ask user for<br/>manual input instead]

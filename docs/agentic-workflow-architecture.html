@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal Agentic Workflow — Architecture Diagrams</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #7ee787;
+    --accent3: #d2a8ff;
+    --accent4: #ffa657;
+    --accent5: #ff7b72;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  nav {
+    width: 280px;
+    min-width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  nav h1 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+  nav .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 16px 20px 6px;
+  }
+  nav a {
+    display: block;
+    padding: 8px 20px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  nav a:hover { background: rgba(88,166,255,0.08); color: var(--accent); }
+  nav a.active { border-left-color: var(--accent); background: rgba(88,166,255,0.1); color: var(--accent); }
+
+  /* Main content */
+  main { flex: 1; padding: 40px 48px; max-width: 1100px; }
+
+  .hero {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+  .hero p { color: var(--text-muted); font-size: 16px; max-width: 700px; }
+
+  section {
+    margin-bottom: 64px;
+    scroll-margin-top: 32px;
+  }
+  section > h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section > h2 .badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #fff;
+  }
+  .badge-seq { background: #1f6feb; }
+  .badge-flow { background: #238636; }
+  .badge-comp { background: #8957e5; }
+
+  section > .desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+    max-width: 750px;
+  }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    overflow-x: auto;
+  }
+  .diagram-card .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+
+  .legend {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: rgba(88,166,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .legend strong { color: var(--text); }
+
+  /* Mermaid overrides */
+  .mermaid svg { max-width: 100%; }
+
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sidebar">
+  <h1>Architecture Diagrams</h1>
+
+  <div class="section-label">Sequence Diagrams</div>
+  <a href="#seq-request">User Request Lifecycle</a>
+  <a href="#seq-creation">Plugin Creation (5-Phase)</a>
+  <a href="#seq-customization">Plugin Customization</a>
+  <a href="#seq-memory">Memory Lookup Chain</a>
+
+  <div class="section-label">Flowcharts</div>
+  <a href="#flow-trigger">Skill Trigger & Disclosure</a>
+  <a href="#flow-mcp">MCP Discovery & Connection</a>
+  <a href="#flow-standalone-super">Standalone vs Supercharged</a>
+
+  <div class="section-label">Composition Diagrams</div>
+  <a href="#comp-plugin">Plugin Anatomy</a>
+  <a href="#comp-system">Full System Architecture</a>
+  <a href="#comp-connectors">Tool-Agnostic Connector Map</a>
+  <a href="#comp-primitives">Agentic Primitives Taxonomy</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>Universal Agentic Workflow</h1>
+  <p>Architecture diagrams for the composable, extensible plugin system built on Copilot's agentic primitives — Skills, Agents, MCP Servers, and Hooks — orchestrated through declarative configuration and tool-agnostic archetypes.</p>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SEQUENCE DIAGRAMS                           -->
+<!-- ════════════════════════════════════════════ -->
+
+<section id="seq-request">
+  <h2><span class="badge badge-seq">Sequence</span> User Request Lifecycle</h2>
+  <p class="desc">Traces a user request (e.g. "generate my standup") from intent detection through skill loading, progressive disclosure, MCP data fetching, and structured response delivery.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant R as Router
+    participant SM as Skill Manifest
+    participant S as SKILL.md
+    participant REF as references
+    participant MCP as MCP Servers
+    participant OUT as Structured Output
+
+    U->>R: "Generate my standup"
+
+    Note over R,SM: Phase 1 - Intent Matching
+    R->>SM: Match utterance against skill descriptions in YAML frontmatter
+    SM-->>R: Best match: engineering:standup
+
+    Note over R,S: Phase 2 - Progressive Disclosure
+    R->>S: Load SKILL.md body (imperative instructions, max 3000 words)
+    S-->>R: Standalone and Supercharged modes, output format, connector refs
+
+    alt References needed
+        R->>REF: Load references/*.md (patterns, advanced docs)
+        REF-->>R: Detailed supplementary context
+    end
+
+    Note over R,MCP: Phase 3 - Tool Integration
+    R->>R: Check CONNECTORS.md for source-control, project-tracker, chat, CI-CD
+
+    alt MCP Connected - Supercharged Mode
+        par Parallel MCP Calls
+            R->>MCP: github list_commits since yesterday
+            R->>MCP: linear list_issues assigned to me updated today
+            R->>MCP: slack search_messages in eng channel
+        end
+        MCP-->>R: Commits and PR reviews
+        MCP-->>R: Ticket status changes
+        MCP-->>R: Relevant team discussions
+    else No MCP - Standalone Mode
+        R->>U: "What did you work on yesterday?"
+        U-->>R: Free-text activity summary
+    end
+
+    Note over R,OUT: Phase 4 - Response Generation
+    R->>OUT: Structure into Yesterday / Today / Blockers
+    OUT-->>U: Formatted standup with ticket references
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Key insight:</strong> The same skill produces identical output structure regardless of mode. MCP connections enrich the data automatically — the skill is <em>tool-agnostic</em> by design, referencing <code>~~source control</code> not "GitHub."
+  </div>
+</section>
+
+<section id="seq-creation">
+  <h2><span class="badge badge-seq">Sequence</span> Plugin Creation Workflow (5-Phase)</h2>
+  <p class="desc">The guided workflow from the <code>create-cowork-plugin</code> skill. Each phase uses AskUserQuestion for interactive decision-making, building a complete plugin from scratch.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Claude Skill
+    participant AQ as AskUserQuestion
+    participant FS as File System
+    participant REG as MCP Registry
+    participant VAL as Validator
+
+    Note over U,C: Phase 1 - Discovery
+    U->>C: "I want to create a plugin"
+    C->>AQ: What problem does this plugin solve?
+    AQ-->>C: "Automate our release process"
+    C->>AQ: Who are the primary users?
+    AQ-->>C: "Engineering team"
+    C->>AQ: What external tools does it need?
+    AQ-->>C: "GitHub, Slack, PagerDuty"
+
+    Note over C: Phase 2 - Component Planning
+    C->>C: Analyze requirements, determine primitives
+    C->>AQ: Confirm plan: 3 Skills + MCP (no Agents/Hooks)
+    AQ-->>C: Confirmed
+
+    Note over C,AQ: Phase 3 - Design and Clarify
+    loop For each skill
+        C->>AQ: Skill name, trigger phrases, arguments, tools?
+        AQ-->>C: Skill specification details
+    end
+    C->>AQ: MCP servers: GitHub, Slack, PagerDuty - scopes?
+    AQ-->>C: Confirmed integrations
+
+    Note over C,FS: Phase 4 - Implementation
+    C->>FS: Create plugin directory structure
+    C->>FS: Write .claude-plugin/plugin.json (name, version, author)
+
+    loop For each component
+        C->>FS: Create skills/skill-name/SKILL.md (frontmatter + body)
+        C->>FS: Create skills/skill-name/references/ (supplementary docs)
+    end
+
+    C->>FS: Write .mcp.json (HTTP endpoints for GitHub, Slack, PagerDuty)
+    C->>FS: Write CONNECTORS.md (category-to-tool mappings)
+    C->>FS: Write README.md (user docs)
+
+    Note over C,VAL: Phase 5 - Review and Package
+    C->>VAL: claude plugin validate path/to/plugin.json
+    VAL-->>C: Validation passed
+    C->>FS: Package into release-manager.plugin
+    C-->>U: Plugin ready - Rich preview + Accept button
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Extensibility pattern:</strong> The 5-phase archetype is itself declarative — each phase's questions are driven by the component-schemas.md reference file. Adding a new primitive type means adding its schema, and the creation workflow automatically incorporates it.
+  </div>
+</section>
+
+<section id="seq-customization">
+  <h2><span class="badge badge-seq">Sequence</span> Plugin Customization Workflow</h2>
+  <p class="desc">How <code>cowork-plugin-customizer</code> adapts a tool-agnostic plugin to an organization's specific tools and conventions using <code>~~placeholder</code> replacement and MCP discovery.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Claude Customizer
+    participant P as Plugin Files
+    participant KMCP as Knowledge MCPs
+    participant REG as MCP Registry
+    participant SC as suggest_connectors
+
+    U->>C: "Customize engineering plugin for our team"
+
+    Note over C,P: Phase 0 - Read Plugin and Detect Mode
+    C->>P: Scan for placeholder tokens in skills/ and CONNECTORS.md
+    P-->>C: Found: source-control, project-tracker, chat, monitoring, CI-CD
+    C->>C: Mode = Generic Setup (has placeholders to replace)
+
+    Note over C,KMCP: Phase 1 - Gather Org Context
+    par Knowledge MCP Queries
+        C->>KMCP: Slack search for jira OR asana OR linear
+        C->>KMCP: Slack search for deploy OR CI OR pipeline
+        C->>KMCP: Notion search for engineering onboarding
+    end
+    KMCP-->>C: Team uses Linear, GitHub, Datadog
+
+    Note over C: Phase 2 - Build Todo List
+    C->>C: Plan replacements: source-control=GitHub, tracker=Linear, chat=Slack, monitoring=Datadog
+
+    Note over C,P: Phase 3 - Execute Replacements
+    loop For each placeholder
+        C->>P: Edit SKILL.md: replace category token with real tool name
+        C->>P: Edit CONNECTORS.md: update category mappings
+    end
+
+    Note over C,SC: Phase 4 - Connect MCPs
+    loop For each identified tool
+        C->>REG: search_mcp_registry(keywords=["linear"])
+        REG-->>C: Found Linear MCP entry
+        C->>SC: suggest_connectors(directoryUuids=[uuid])
+        SC-->>U: OAuth prompt for Linear
+        U-->>SC: Authorized
+    end
+    C->>P: Update .mcp.json with connected server URLs
+
+    Note over C,U: Phase 5 - Package and Deliver
+    C->>P: Package customized plugin
+    C-->>U: Delivered: engineering-yourteam.plugin
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Three customization modes:</strong> (1) <em>Generic Setup</em> — plugin has <code>~~</code> placeholders to replace; (2) <em>Scoped</em> — user targets specific components ("update the standup skill"); (3) <em>General</em> — open-ended modifications. The customizer auto-detects which mode applies.
+  </div>
+</section>
+
+<section id="seq-memory">
+  <h2><span class="badge badge-seq">Sequence</span> Memory Lookup Chain</h2>
+  <p class="desc">The two-tier memory system's progressive lookup strategy: hot cache (CLAUDE.md) → deep storage (memory/) → user query. Designed so 90% of lookups resolve from the hot cache.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Claude
+    participant HOT as CLAUDE.md Hot Cache
+    participant GLOSS as memory/glossary.md
+    participant DEEP as memory/projects
+
+    U->>C: "Ask Todd about the PSR for Oracle"
+
+    Note over C,HOT: Tier 1 - Hot Cache Lookup
+    C->>HOT: Lookup Todd, PSR, Oracle
+    HOT-->>C: Todd = Todd Chen (Finance VP), PSR = Pipeline Status Report, Oracle = Oracle Systems Q2 deal
+
+    Note over C: All resolved from hot cache (fast path)
+    C-->>U: Ask Todd Chen about the Pipeline Status Report for the Oracle Systems Q2 deal
+
+    Note over C,HOT: Scenario 2 - Partial Cache Miss
+
+    U->>C: "Get Mika's take on DORA for Starfish"
+    C->>HOT: Lookup Mika, DORA, Starfish
+    HOT-->>C: Mika = Mika Patel (Eng Lead) - found. DORA and Starfish - not found.
+
+    Note over C,GLOSS: Tier 2 - Glossary Lookup
+    C->>GLOSS: Lookup DORA and Starfish
+    GLOSS-->>C: DORA = DevOps Research and Assessment. Starfish - not found.
+
+    Note over C,DEEP: Tier 3 - Deep Storage
+    C->>DEEP: Search memory/projects/ for Starfish
+    DEEP-->>C: Starfish = microservices migration project, Q3
+
+    Note over C,HOT: Promote to Hot Cache
+    C->>HOT: Add Starfish and DORA entries to CLAUDE.md
+    C-->>U: Decoded request with full context
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Design goal:</strong> CLAUDE.md stays compact (~50-80 lines) covering ~30 people, ~30 terms, and 5-15 active projects. Items promoted/demoted as work context shifts. Tables used for density.
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- FLOWCHARTS                                  -->
+<!-- ════════════════════════════════════════════ -->
+
+<section id="flow-trigger">
+  <h2><span class="badge badge-flow">Flowchart</span> Skill Trigger & Progressive Disclosure</h2>
+  <p class="desc">Decision tree showing how user intent maps to skill activation, how context is progressively loaded, and the three disclosure levels that manage token budgets.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+flowchart TD
+    A[User Message Received] --> B{Match against skill<br/>description triggers?}
+
+    B -->|No match| C[Handle as general<br/>conversation]
+    B -->|Match found| D[Select best-matching skill]
+
+    D --> E[Level 1: Metadata<br/>Always in context]
+    E --> F["Load name + description<br/>(~100 words from YAML frontmatter)"]
+
+    F --> G[Level 2: Skill Body<br/>Loaded on trigger]
+    G --> H["Load SKILL.md body<br/>(max 3000 words, imperative instructions)"]
+
+    H --> I{Does skill need<br/>supplementary context?}
+
+    I -->|No| J[Execute skill with<br/>body instructions only]
+
+    I -->|Yes| K[Level 3: Bundled Resources<br/>Loaded on demand]
+    K --> L["Load references/*.md<br/>(unlimited size, detailed docs)"]
+    K --> M["Load examples/*<br/>(working code samples)"]
+    K --> N["Load scripts/*<br/>(utility scripts)"]
+
+    L --> J
+    M --> J
+    N --> J
+
+    J --> O{Skill references<br/>connector categories?}
+    O -->|Yes| P{MCP servers<br/>connected?}
+    O -->|No| Q[Generate output<br/>from instructions alone]
+
+    P -->|Connected| R[Supercharged Mode:<br/>Fetch data from MCPs]
+    P -->|Not connected| S[Standalone Mode:<br/>Ask user for input]
+
+    R --> T[Structured Response]
+    S --> T
+    Q --> T
+
+    style A fill:#1f6feb,color:#fff,stroke:none
+    style E fill:#238636,color:#fff,stroke:none
+    style G fill:#8957e5,color:#fff,stroke:none
+    style K fill:#d29922,color:#fff,stroke:none
+    style T fill:#1f6feb,color:#fff,stroke:none
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Token budget strategy:</strong> Level 1 (always loaded) is ~100 words per skill × N skills. Level 2 loads ≤3000 words only for the triggered skill. Level 3 is unbounded but loaded only when the skill's instructions reference supplementary material. This keeps the context window lean.
+  </div>
+</section>
+
+<section id="flow-mcp">
+  <h2><span class="badge badge-flow">Flowchart</span> MCP Discovery & Connection</h2>
+  <p class="desc">How a plugin discovers, authenticates, and configures MCP server connections — from registry search through OAuth to <code>.mcp.json</code> configuration.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+flowchart TD
+    A[Skill needs external tool] --> B{Tool already in<br/>.mcp.json?}
+
+    B -->|Yes| C{User authenticated<br/>with this MCP?}
+    C -->|Yes| D[Use MCP tools directly]
+    C -->|No| E["suggest_connectors()<br/>OAuth prompt to user"]
+    E --> F{User authorizes?}
+    F -->|Yes| D
+    F -->|No| G[Fall back to<br/>Standalone Mode]
+
+    B -->|No| H["search_mcp_registry()<br/>keywords from category mapping"]
+
+    H --> I{Registry has<br/>matching MCP?}
+
+    I -->|Yes| J["suggest_connectors()<br/>Present available MCPs to user"]
+    J --> K{User selects<br/>and authorizes?}
+    K -->|Yes| L[Update .mcp.json<br/>with server URL]
+    L --> D
+    K -->|No| G
+
+    I -->|No| M{Alternative tool<br/>in same category?}
+    M -->|Yes| H
+    M -->|No| G
+
+    G --> N[Ask user for<br/>manual input instead]
+
+    style A fill:#1f6feb,color:#fff,stroke:none
+    style D fill:#238636,color:#fff,stroke:none
+    style G fill:#d29922,color:#fff,stroke:none
+    style H fill:#8957e5,color:#fff,stroke:none
+    style L fill:#238636,color:#fff,stroke:none
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Category → Keywords mapping (from mcp-servers.md):</strong> project-management → ["asana", "jira", "linear"]; software-coding → ["github", "gitlab"]; chat → ["slack", "teams"]; monitoring → ["datadog", "new relic"]; documents → ["notion", "confluence"]. This decouples skill logic from specific tool knowledge.
+  </div>
+</section>
+
+<section id="flow-standalone-super">
+  <h2><span class="badge badge-flow">Flowchart</span> Standalone vs Supercharged Mode</h2>
+  <p class="desc">Every skill supports both modes. This flowchart shows the runtime decision path and how data sourcing differs while output structure stays identical.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+flowchart LR
+    A[Skill Triggered] --> B{Check<br/>CONNECTORS.md}
+
+    B --> C["List required categories:<br/>source-control, project-tracker, chat"]
+
+    C --> D{For each category:<br/>MCP connected?}
+
+    D -->|All connected| E[SUPERCHARGED MODE]
+    D -->|Some connected| F[HYBRID MODE]
+    D -->|None connected| G[STANDALONE MODE]
+
+    E --> H["Parallel MCP calls:<br/>github = commits + PRs<br/>linear = tickets<br/>slack = discussions"]
+
+    F --> I["Connected MCPs auto-fetch<br/>Missing tools ask user"]
+
+    G --> J["AskUserQuestion for<br/>all required context"]
+
+    H --> K["Identical Output Structure<br/>(e.g., Yesterday / Today / Blockers)"]
+    I --> K
+    J --> K
+
+    style E fill:#238636,color:#fff,stroke:none
+    style F fill:#d29922,color:#fff,stroke:none
+    style G fill:#8957e5,color:#fff,stroke:none
+    style K fill:#1f6feb,color:#fff,stroke:none
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Graceful degradation:</strong> Skills never fail due to missing MCPs. They degrade from supercharged (automatic) → hybrid (partial automation) → standalone (manual input). The output contract remains the same regardless of data source.
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- COMPOSITION DIAGRAMS                        -->
+<!-- ════════════════════════════════════════════ -->
+
+<section id="comp-plugin">
+  <h2><span class="badge badge-comp">Composition</span> Plugin Anatomy</h2>
+  <p class="desc">The internal structure of a single plugin showing all four agentic primitives, configuration files, and the progressive disclosure hierarchy within skills.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph TD
+    subgraph PLUGIN["📦 Plugin (self-contained unit)"]
+        direction TB
+
+        subgraph META[".claude-plugin/"]
+            PJ["plugin.json<br/><i>name, version, description, author</i>"]
+        end
+
+        subgraph SKILLS["skills/ - Domain Knowledge + Actions"]
+            direction TB
+            S1["skill-a/"]
+            S2["skill-b/"]
+            S3["skill-c/"]
+
+            subgraph SKILL_DETAIL["Skill Internal Structure"]
+                direction TB
+                SM["SKILL.md<br/><i>YAML frontmatter (trigger routing)</i><br/><i>+ Imperative body (max 3000 words)</i>"]
+                SR["references/<br/><i>Detailed docs, patterns,<br/>advanced usage (unlimited)</i>"]
+                SE["examples/<br/><i>Working code samples</i>"]
+                SS["scripts/<br/><i>Utility scripts</i>"]
+            end
+        end
+
+        subgraph AGENTS["agents/ - Autonomous Sub-processes"]
+            AG1["agent-name.md<br/><i>Frontmatter: model, tools, color</i><br/><i>Body: system prompt</i><br/><i>Triggers: example blocks</i>"]
+        end
+
+        subgraph HOOKS["hooks/ - Lifecycle Interceptors"]
+            HJ["hooks.json<br/><i>Events: PreToolUse, PostToolUse,</i><br/><i>Stop, SessionStart, UserPromptSubmit</i>"]
+            HT1["Prompt-based<br/><i>(LLM-driven, complex logic)</i>"]
+            HT2["Command-based<br/><i>(Deterministic checks)</i>"]
+        end
+
+        subgraph MCPS[".mcp.json - External Tool Connections"]
+            M1["HTTP servers<br/><i>slack, github, linear...</i>"]
+            M2["SSE servers<br/><i>Real-time streaming</i>"]
+            M3["stdio servers<br/><i>Local process spawn</i>"]
+        end
+
+        CONN["CONNECTORS.md<br/><i>category-to-tool mapping</i>"]
+        README["README.md<br/><i>User documentation</i>"]
+    end
+
+    style PLUGIN fill:#161b22,stroke:#30363d,color:#e6edf3
+    style META fill:#1f3d5e,stroke:#58a6ff,color:#e6edf3
+    style SKILLS fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style SKILL_DETAIL fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style AGENTS fill:#2d1f4e,stroke:#d2a8ff,color:#e6edf3
+    style HOOKS fill:#3d2a1a,stroke:#ffa657,color:#e6edf3
+    style MCPS fill:#3a1a1a,stroke:#ff7b72,color:#e6edf3
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Only <code>plugin.json</code> is required.</strong> All other components are optional and composed as needed. A minimal plugin might have just one skill. A full-featured plugin uses all four primitives plus connectors. The <code>${CLAUDE_PLUGIN_ROOT}</code> variable ensures portable paths across environments.
+  </div>
+</section>
+
+<section id="comp-system">
+  <h2><span class="badge badge-comp">Composition</span> Full System Architecture</h2>
+  <p class="desc">The complete installed plugin ecosystem showing all six plugins, their skill counts, shared MCP server connections, and the management layer that creates/customizes them.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph TB
+    subgraph USER["👤 User Layer"]
+        U[User Intent / Natural Language]
+    end
+
+    subgraph ROUTER["🧠 Claude Router"]
+        R[Intent Matching Engine<br/><i>Matches utterance to skill description</i>]
+        PM[Plugin Manifest<br/><i>.remote-plugins/manifest.json</i>]
+        SKM[Skills Manifest<br/><i>.skills/manifest.json</i>]
+    end
+
+    subgraph MGMT["🔧 Plugin Management Layer"]
+        direction LR
+        CREATE["create-cowork-plugin<br/><i>5-phase guided creation</i>"]
+        CUSTOM["cowork-plugin-customizer<br/><i>~~ placeholder replacement</i><br/><i>MCP discovery & connect</i>"]
+    end
+
+    subgraph DOMAIN["📚 Domain Plugin Layer"]
+        direction TB
+
+        subgraph ENG["Engineering (v1.2.0)"]
+            E1[code-review]
+            E2[standup]
+            E3[incident-response]
+            E4[architecture]
+            E5[deploy-checklist]
+            E6["+ 4 more skills"]
+        end
+
+        subgraph DES["Design (v1.2.0)"]
+            D1[design-critique]
+            D2[design-system]
+            D3[accessibility-review]
+            D4[ux-copy]
+            D5["+ 3 more skills"]
+        end
+
+        subgraph PM2["Product Mgmt (v1.2.0)"]
+            P1[sprint-planning]
+            P2[write-spec]
+            P3[roadmap-update]
+            P4[metrics-review]
+            P5["+ 3 more skills"]
+        end
+
+        subgraph PROD["Productivity (v1.2.0)"]
+            PR1[task-management]
+            PR2[memory-management]
+            PR3[start / update]
+        end
+
+        subgraph CR["Common Room (v1.2.0)"]
+            C1[prospect]
+            C2[call-prep]
+            C3[account-research]
+            C4["+ 3 more skills"]
+        end
+    end
+
+    subgraph BUILTIN["🛠 Built-in Skills"]
+        B1[pdf]
+        B2[xlsx]
+        B3[pptx]
+        B4[docx]
+        B5[schedule]
+        B6[skill-creator]
+    end
+
+    subgraph MCPL["🌐 MCP Server Layer (Shared)"]
+        direction LR
+        MS[Slack]
+        MG[GitHub]
+        ML[Linear]
+        MA[Asana]
+        MN[Notion]
+        MAT[Atlassian]
+        MPD[PagerDuty]
+        MDD[Datadog]
+        MGC[Google Cal]
+        MGM[Gmail]
+        MF[Figma]
+        MCR[Common Room]
+    end
+
+    U --> R
+    R --> PM
+    R --> SKM
+    PM --> MGMT
+    PM --> DOMAIN
+    SKM --> BUILTIN
+
+    ENG -.-> MS & MG & ML & MA & MPD & MDD
+    DES -.-> MF & MS & MN & MAT
+    PM2 -.-> MS & ML & MA & MN & MF
+    PROD -.-> MS & MN & MA & ML & MGC & MGM
+    CR -.-> MCR
+
+    MGMT -->|creates & customizes| DOMAIN
+
+    style USER fill:#1f6feb,stroke:none,color:#fff
+    style ROUTER fill:#161b22,stroke:#58a6ff,color:#e6edf3
+    style MGMT fill:#2d1f4e,stroke:#d2a8ff,color:#e6edf3
+    style ENG fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style DES fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style PM2 fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style PROD fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style CR fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style BUILTIN fill:#3d2a1a,stroke:#ffa657,color:#e6edf3
+    style MCPL fill:#3a1a1a,stroke:#ff7b72,color:#e6edf3
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Shared MCP connections:</strong> Multiple plugins share the same MCP servers (e.g., Slack is used by Engineering, Product, Productivity, and Design). Authentication happens once; all plugins benefit. The management layer (top) can create entirely new domain plugins or customize existing ones.
+  </div>
+</section>
+
+<section id="comp-connectors">
+  <h2><span class="badge badge-comp">Composition</span> Tool-Agnostic Connector Map</h2>
+  <p class="desc">The <code>~~placeholder</code> abstraction layer that decouples skills from specific tools. Each category maps to multiple possible MCP server implementations.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    subgraph SKILLS["Skills Reference (tool-agnostic)"]
+        S1["~~source control"]
+        S2["~~project tracker"]
+        S3["~~chat"]
+        S4["~~monitoring"]
+        S5["~~incident management"]
+        S6["~~documents"]
+        S7["~~email"]
+        S8["~~design"]
+        S9["~~CI/CD"]
+    end
+
+    subgraph CONNECTORS["CONNECTORS.md (mapping layer)"]
+        direction TB
+        CM["Category to Server mapping<br/><i>Defined per-plugin,<br/>customized per-org</i>"]
+    end
+
+    subgraph MCPS["MCP Server Implementations"]
+        G1[GitHub]
+        G2[GitLab]
+        G3[Bitbucket]
+
+        T1[Linear]
+        T2[Asana]
+        T3[Jira]
+        T4[Monday]
+        T5[ClickUp]
+
+        CH1[Slack]
+        CH2[Teams]
+        CH3[Discord]
+
+        MO1[Datadog]
+        MO2[New Relic]
+        MO3[Grafana]
+
+        IM1[PagerDuty]
+        IM2[OpsGenie]
+
+        DO1[Notion]
+        DO2[Confluence]
+        DO3[Google Docs]
+
+        EM1[Gmail]
+        EM2[Outlook]
+
+        DE1[Figma]
+        DE2[Sketch]
+
+        CI1[GitHub Actions]
+        CI2[CircleCI]
+        CI3[Jenkins]
+    end
+
+    S1 --> CM
+    S2 --> CM
+    S3 --> CM
+    S4 --> CM
+    S5 --> CM
+    S6 --> CM
+    S7 --> CM
+    S8 --> CM
+    S9 --> CM
+
+    CM --> G1 & G2 & G3
+    CM --> T1 & T2 & T3 & T4 & T5
+    CM --> CH1 & CH2 & CH3
+    CM --> MO1 & MO2 & MO3
+    CM --> IM1 & IM2
+    CM --> DO1 & DO2 & DO3
+    CM --> EM1 & EM2
+    CM --> DE1 & DE2
+    CM --> CI1 & CI2 & CI3
+
+    style SKILLS fill:#2d1f4e,stroke:#d2a8ff,color:#e6edf3
+    style CONNECTORS fill:#1f3d5e,stroke:#58a6ff,color:#e6edf3
+    style MCPS fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Extensibility mechanism:</strong> To support a new tool (e.g., Shortcut for project tracking), you only need to: (1) add it to CONNECTORS.md under <code>~~project tracker</code>, (2) add its MCP URL to <code>.mcp.json</code>. No skill code changes required. This is the core composability pattern.
+  </div>
+</section>
+
+<section id="comp-primitives">
+  <h2><span class="badge badge-comp">Composition</span> Agentic Primitives Taxonomy</h2>
+  <p class="desc">The four fundamental building blocks (Skills, Agents, Hooks, MCP Servers) and how they relate to each other within the plugin composition model.</p>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph TB
+    subgraph PRIMITIVES["Copilot Agentic Primitives"]
+        direction TB
+
+        subgraph SK["🎯 SKILLS — Domain Knowledge + Workflows"]
+            SK1["Trigger: description matching<br/>from user utterance"]
+            SK2["Structure: YAML frontmatter<br/>+ imperative body"]
+            SK3["Disclosure: metadata → body<br/>→ references (3 levels)"]
+            SK4["Modes: standalone / supercharged"]
+            SK5["Config: skills/name/SKILL.md"]
+        end
+
+        subgraph AG["🤖 AGENTS — Autonomous Sub-processes"]
+            AG1["Trigger: example blocks<br/>with conditions"]
+            AG2["Execution: multi-step,<br/>tool-calling loops"]
+            AG3["Config: model override<br/>(sonnet/opus/haiku)"]
+            AG4["Scope: sandboxed with<br/>defined tool access"]
+            AG5["Config: agents/name.md"]
+        end
+
+        subgraph HK["⚡ HOOKS — Lifecycle Interceptors"]
+            HK1["Events: PreToolUse,<br/>PostToolUse, Stop,<br/>SessionStart, etc."]
+            HK2["Types: prompt-based<br/>(LLM) or command-based<br/>(deterministic)"]
+            HK3["Scope: filter by<br/>tool name pattern"]
+            HK4["Config: hooks/hooks.json"]
+        end
+
+        subgraph MC["🌐 MCP SERVERS — External Integrations"]
+            MC1["Transport: HTTP, SSE,<br/>or stdio"]
+            MC2["Auth: OAuth via<br/>suggest_connectors()"]
+            MC3["Discovery: search_mcp_registry<br/>by category keywords"]
+            MC4["Config: .mcp.json"]
+        end
+    end
+
+    SK -->|"invokes tools from"| MC
+    SK -->|"can spawn"| AG
+    AG -->|"uses tools from"| MC
+    HK -->|"intercepts calls to"| MC
+    HK -->|"modifies behavior of"| SK
+
+    subgraph COMPOSE["Composition Model"]
+        CP1["plugin.json declares<br/>which primitives are included"]
+        CP2["CONNECTORS.md maps<br/>~~categories → MCP servers"]
+        CP3["${CLAUDE_PLUGIN_ROOT}<br/>enables portable paths"]
+    end
+
+    PRIMITIVES --> COMPOSE
+
+    style SK fill:#1a3a2a,stroke:#7ee787,color:#e6edf3
+    style AG fill:#2d1f4e,stroke:#d2a8ff,color:#e6edf3
+    style HK fill:#3d2a1a,stroke:#ffa657,color:#e6edf3
+    style MC fill:#3a1a1a,stroke:#ff7b72,color:#e6edf3
+    style COMPOSE fill:#1f3d5e,stroke:#58a6ff,color:#e6edf3
+    </div>
+  </div>
+  <div class="legend">
+    <strong>Primitive relationships:</strong> Skills are the primary interface (user-triggered). They invoke MCP tools for data and can spawn Agents for multi-step autonomous work. Hooks cross-cut all primitives — they intercept tool calls, modify skill behavior, and enforce guardrails. MCP Servers are the shared integration fabric.
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    darkMode: true,
+    background: '#161b22',
+    primaryColor: '#1f6feb',
+    primaryTextColor: '#e6edf3',
+    primaryBorderColor: '#30363d',
+    lineColor: '#58a6ff',
+    secondaryColor: '#238636',
+    tertiaryColor: '#2d1f4e',
+    fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+    fontSize: '13px',
+    noteBkgColor: '#1f3d5e',
+    noteTextColor: '#e6edf3',
+    noteBorderColor: '#58a6ff',
+    actorBkg: '#1f6feb',
+    actorTextColor: '#ffffff',
+    actorBorder: '#58a6ff',
+    signalColor: '#e6edf3',
+    signalTextColor: '#e6edf3',
+    sequenceNumberColor: '#ffffff'
+  },
+  sequence: {
+    actorMargin: 60,
+    messageMargin: 40,
+    mirrorActors: false,
+    useMaxWidth: false,
+    width: 180,
+    wrap: true
+  },
+  flowchart: {
+    useMaxWidth: false,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 15
+  }
+});
+
+// Active nav highlighting
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => link.classList.remove('active'));
+      const activeLink = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+      if (activeLink) activeLink.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(section => observer.observe(section));
+</script>
+</body>
+</html>

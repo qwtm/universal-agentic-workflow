@@ -1,0 +1,35 @@
+flowchart TD
+    A[User Message Received] --> B{Match against skill<br/>description triggers?}
+
+    B -->|No match| C[Handle as general<br/>conversation]
+    B -->|Match found| D[Select best-matching skill]
+
+    D --> E[Level 1: Metadata<br/>Always in context]
+    E --> F["Load name + description<br/>(~100 words from YAML frontmatter)"]
+
+    F --> G[Level 2: Skill Body<br/>Loaded on trigger]
+    G --> H["Load SKILL.md body<br/>(≤3000 words, imperative instructions)"]
+
+    H --> I{Does skill need<br/>supplementary context?}
+
+    I -->|No| J[Execute skill with<br/>body instructions only]
+
+    I -->|Yes| K[Level 3: Bundled Resources<br/>Loaded on demand]
+    K --> L["Load references/*.md<br/>(unlimited size, detailed docs)"]
+    K --> M["Load examples/*<br/>(working code samples)"]
+    K --> N["Load scripts/*<br/>(utility scripts)"]
+
+    L --> J
+    M --> J
+    N --> J
+
+    J --> O{Skill references<br/>~~connectors?}
+    O -->|Yes| P{MCP servers<br/>connected?}
+    O -->|No| Q[Generate output<br/>from instructions alone]
+
+    P -->|Connected| R[Supercharged Mode:<br/>Fetch data from MCPs]
+    P -->|Not connected| S[Standalone Mode:<br/>Ask user for input]
+
+    R --> T[Structured Response]
+    S --> T
+    Q --> T

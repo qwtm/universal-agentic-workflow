@@ -1,0 +1,46 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Claude (Customizer)
+    participant P as Plugin Files
+    participant KMCP as Knowledge MCPs<br/>(Slack, Docs, Email)
+    participant REG as search_mcp_registry
+    participant SC as suggest_connectors
+
+    U->>C: "Customize engineering plugin for our team"
+
+    Note over C,P: Phase 0 — Read Plugin & Detect Mode
+    C->>P: Scan for ~~ placeholders<br/>in skills/ and CONNECTORS.md
+    P-->>C: Found: ~~source control, ~~project tracker,<br/>~~chat, ~~monitoring, ~~CI/CD
+    C->>C: Mode = Generic Setup<br/>(has placeholders to replace)
+
+    Note over C,KMCP: Phase 1 — Gather Org Context
+    par Knowledge MCP Queries
+        C->>KMCP: Slack → search("jira OR asana OR linear")
+        C->>KMCP: Slack → search("deploy OR CI OR pipeline")
+        C->>KMCP: Notion → search("engineering onboarding")
+    end
+    KMCP-->>C: Team uses Linear for tickets,<br/>GitHub for code, Datadog for monitoring
+
+    Note over C: Phase 2 — Build Todo List
+    C->>C: TodoWrite: Replace ~~source control → GitHub,<br/>~~project tracker → Linear,<br/>~~chat → Slack,<br/>~~monitoring → Datadog
+
+    Note over C,P: Phase 3 — Execute Replacements
+    loop For each placeholder
+        C->>P: Edit SKILL.md files:<br/>"~~source control" → "GitHub"
+        C->>P: Edit CONNECTORS.md:<br/>Update category mappings
+    end
+
+    Note over C,SC: Phase 4 — Connect MCPs
+    loop For each identified tool
+        C->>REG: search_mcp_registry(keywords=["linear"])
+        REG-->>C: Found: Linear MCP (directoryUuid: xxx)
+        C->>SC: suggest_connectors(directoryUuids=[xxx])
+        SC-->>U: OAuth prompt for Linear
+        U-->>SC: Authorized ✓
+    end
+    C->>P: Update .mcp.json with<br/>connected server URLs
+
+    Note over C,U: Phase 5 — Package & Deliver
+    C->>P: Package customized plugin
+    C-->>U: Customized plugin delivered<br/>[engineering-yourteam.plugin]

@@ -1,0 +1,74 @@
+graph LR
+    subgraph SKILLS["Skills Reference - tool-agnostic"]
+        S1["~~source control"]
+        S2["~~project tracker"]
+        S3["~~chat"]
+        S4["~~monitoring"]
+        S5["~~incident management"]
+        S6["~~documents"]
+        S7["~~email"]
+        S8["~~design"]
+        S9["~~CI/CD"]
+    end
+
+    subgraph CONNECTORS["CONNECTORS.md - mapping layer"]
+        direction TB
+        CM["Category to Server mapping<br/>Defined per-plugin,<br/>customized per-org"]
+    end
+
+    subgraph MCPS["MCP Server Implementations"]
+        G1[GitHub]
+        G2[GitLab]
+        G3[Bitbucket]
+
+        T1[Linear]
+        T2[Asana]
+        T3[Jira]
+        T4[Monday]
+        T5[ClickUp]
+
+        CH1[Slack]
+        CH2[Teams]
+        CH3[Discord]
+
+        MO1[Datadog]
+        MO2[New Relic]
+        MO3[Grafana]
+
+        IM1[PagerDuty]
+        IM2[OpsGenie]
+
+        DO1[Notion]
+        DO2[Confluence]
+        DO3[Google Docs]
+
+        EM1[Gmail]
+        EM2[Outlook]
+
+        DE1[Figma]
+        DE2[Sketch]
+
+        CI1[GitHub Actions]
+        CI2[CircleCI]
+        CI3[Jenkins]
+    end
+
+    S1 --> CM
+    S2 --> CM
+    S3 --> CM
+    S4 --> CM
+    S5 --> CM
+    S6 --> CM
+    S7 --> CM
+    S8 --> CM
+    S9 --> CM
+
+    CM --> G1 & G2 & G3
+    CM --> T1 & T2 & T3 & T4 & T5
+    CM --> CH1 & CH2 & CH3
+    CM --> MO1 & MO2 & MO3
+    CM --> IM1 & IM2
+    CM --> DO1 & DO2 & DO3
+    CM --> EM1 & EM2
+    CM --> DE1 & DE2
+    CM --> CI1 & CI2 & CI3

@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Claude
+    participant HOT as CLAUDE.md<br/>(Hot Cache)
+    participant GLOSS as memory/glossary.md
+    participant DEEP as memory/people/<br/>memory/projects/
+
+    U->>C: "Ask Todd about the PSR for Oracle"
+
+    Note over C,HOT: Tier 1 — Hot Cache Lookup
+    C->>HOT: Lookup "Todd", "PSR", "Oracle"
+    HOT-->>C: Todd = Todd Chen (Finance, VP)<br/>PSR = Pipeline Status Report<br/>Oracle = Oracle Systems (Q2 deal)
+
+    Note over C: All resolved from hot cache
+    C-->>U: Decoded: "Ask Todd Chen (Finance VP)<br/>about the Pipeline Status Report<br/>for the Oracle Systems Q2 deal"
+
+    Note over C,HOT: — Alternative: Partial Cache Miss —
+
+    U->>C: "Get Mika's take on DORA for Starfish"
+    C->>HOT: Lookup "Mika", "DORA", "Starfish"
+    HOT-->>C: Mika = Mika Patel (Eng Lead)<br/>DORA = not found<br/>Starfish = not found
+
+    Note over C,GLOSS: Tier 2 — Glossary Lookup
+    C->>GLOSS: Lookup "DORA", "Starfish"
+    GLOSS-->>C: DORA = DevOps Research and Assessment<br/>Starfish = not found
+
+    Note over C,DEEP: Tier 3 — Deep Storage
+    C->>DEEP: Search memory/projects/ for "Starfish"
+    DEEP-->>C: Starfish = Project Starfish<br/>(microservices migration, Q3)
+
+    Note over C,HOT: Promote to Hot Cache
+    C->>HOT: Add Starfish + DORA to CLAUDE.md<br/>(now resolves faster next time)
+    C-->>U: Decoded request with full context

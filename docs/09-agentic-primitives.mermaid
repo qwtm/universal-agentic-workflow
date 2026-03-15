@@ -1,0 +1,48 @@
+graph TB
+    subgraph PRIMITIVES["Copilot Agentic Primitives"]
+        direction TB
+
+        subgraph SK["SKILLS — Domain Knowledge + Workflows"]
+            SK1["Trigger: description matching<br/>from user utterance"]
+            SK2["Structure: YAML frontmatter<br/>+ imperative body"]
+            SK3["Disclosure: metadata then body<br/>then references (3 levels)"]
+            SK4["Modes: standalone / supercharged"]
+            SK5["Config: skills/name/SKILL.md"]
+        end
+
+        subgraph AG["AGENTS — Autonomous Sub-processes"]
+            AG1["Trigger: example blocks<br/>with conditions"]
+            AG2["Execution: multi-step,<br/>tool-calling loops"]
+            AG3["Config: model override<br/>(sonnet/opus/haiku)"]
+            AG4["Scope: sandboxed with<br/>defined tool access"]
+            AG5["Config: agents/name.md"]
+        end
+
+        subgraph HK["HOOKS — Lifecycle Interceptors"]
+            HK1["Events: PreToolUse,<br/>PostToolUse, Stop,<br/>SessionStart, etc."]
+            HK2["Types: prompt-based<br/>(LLM) or command-based<br/>(deterministic)"]
+            HK3["Scope: filter by<br/>tool name pattern"]
+            HK4["Config: hooks/hooks.json"]
+        end
+
+        subgraph MC["MCP SERVERS — External Integrations"]
+            MC1["Transport: HTTP, SSE,<br/>or stdio"]
+            MC2["Auth: OAuth via<br/>suggest_connectors()"]
+            MC3["Discovery: search_mcp_registry<br/>by category keywords"]
+            MC4["Config: .mcp.json"]
+        end
+    end
+
+    SK -->|"invokes tools from"| MC
+    SK -->|"can spawn"| AG
+    AG -->|"uses tools from"| MC
+    HK -->|"intercepts calls to"| MC
+    HK -->|"modifies behavior of"| SK
+
+    subgraph COMPOSE["Composition Model"]
+        CP1["plugin.json declares<br/>which primitives are included"]
+        CP2["CONNECTORS.md maps<br/>categories to MCP servers"]
+        CP3["CLAUDE_PLUGIN_ROOT<br/>enables portable paths"]
+    end
+
+    PRIMITIVES --> COMPOSE

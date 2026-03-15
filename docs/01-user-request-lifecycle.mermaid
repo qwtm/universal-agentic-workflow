@@ -1,0 +1,45 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant R as Router (Claude)
+    participant SM as Skill Manifest
+    participant S as SKILL.md
+    participant REF as references/
+    participant MCP as MCP Servers
+    participant OUT as Structured Output
+
+    U->>R: "Generate my standup"
+
+    Note over R,SM: Phase 1 — Intent Matching
+    R->>SM: Match utterance against<br/>skill descriptions (YAML frontmatter)
+    SM-->>R: Best match: engineering:standup<br/>(description triggers on "standup")
+
+    Note over R,S: Phase 2 — Progressive Disclosure
+    R->>S: Load SKILL.md body<br/>(≤3000 words, imperative instructions)
+    S-->>R: Standalone + Supercharged modes,<br/>output format, connector refs
+
+    alt References needed
+        R->>REF: Load references/*.md<br/>(patterns, advanced docs)
+        REF-->>R: Detailed supplementary context
+    end
+
+    Note over R,MCP: Phase 3 — Tool Integration
+    R->>R: Check CONNECTORS.md:<br/>~~source control, ~~project tracker,<br/>~~chat, ~~CI/CD
+
+    alt MCP Connected (Supercharged Mode)
+        par Parallel MCP Calls
+            R->>MCP: github → list_commits(since: yesterday)
+            R->>MCP: linear → list_issues(assignee: me, updated: today)
+            R->>MCP: slack → search_messages(channel: #eng)
+        end
+        MCP-->>R: Commits, PR reviews, ticket moves
+        MCP-->>R: Issue status changes, new assignments
+        MCP-->>R: Relevant team discussions
+    else No MCP (Standalone Mode)
+        R->>U: "What did you work on yesterday?"
+        U-->>R: Free-text activity summary
+    end
+
+    Note over R,OUT: Phase 4 — Response Generation
+    R->>OUT: Structure into Yesterday / Today / Blockers
+    OUT-->>U: Formatted standup with ticket refs

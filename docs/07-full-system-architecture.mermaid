@@ -1,0 +1,98 @@
+graph TB
+    subgraph USER["User Layer"]
+        U[User Intent / Natural Language]
+    end
+
+    subgraph ROUTER["Claude Router"]
+        R[Intent Matching Engine<br/>Matches utterance to skill description]
+        PM[Plugin Manifest<br/>.remote-plugins/manifest.json]
+        SKM[Skills Manifest<br/>.skills/manifest.json]
+    end
+
+    subgraph MGMT["Plugin Management Layer"]
+        direction LR
+        CREATE["create-cowork-plugin<br/>5-phase guided creation"]
+        CUSTOM["cowork-plugin-customizer<br/>~~ placeholder replacement<br/>MCP discovery and connect"]
+    end
+
+    subgraph DOMAIN["Domain Plugin Layer"]
+        direction TB
+
+        subgraph ENG["Engineering v1.2.0"]
+            E1[code-review]
+            E2[standup]
+            E3[incident-response]
+            E4[architecture]
+            E5[deploy-checklist]
+            E6["+ 4 more skills"]
+        end
+
+        subgraph DES["Design v1.2.0"]
+            D1[design-critique]
+            D2[design-system]
+            D3[accessibility-review]
+            D4[ux-copy]
+            D5["+ 3 more skills"]
+        end
+
+        subgraph PM2["Product Mgmt v1.2.0"]
+            P1[sprint-planning]
+            P2[write-spec]
+            P3[roadmap-update]
+            P4[metrics-review]
+            P5["+ 3 more skills"]
+        end
+
+        subgraph PROD["Productivity v1.2.0"]
+            PR1[task-management]
+            PR2[memory-management]
+            PR3[start / update]
+        end
+
+        subgraph CR["Common Room v1.2.0"]
+            C1[prospect]
+            C2[call-prep]
+            C3[account-research]
+            C4["+ 3 more skills"]
+        end
+    end
+
+    subgraph BUILTIN["Built-in Skills"]
+        B1[pdf]
+        B2[xlsx]
+        B3[pptx]
+        B4[docx]
+        B5[schedule]
+        B6[skill-creator]
+    end
+
+    subgraph MCPL["MCP Server Layer - Shared"]
+        direction LR
+        MS[Slack]
+        MG[GitHub]
+        ML[Linear]
+        MA[Asana]
+        MN[Notion]
+        MAT[Atlassian]
+        MPD[PagerDuty]
+        MDD[Datadog]
+        MGC[Google Cal]
+        MGM[Gmail]
+        MF[Figma]
+        MCR[Common Room]
+    end
+
+    U --> R
+    R --> PM
+    R --> SKM
+    PM --> MGMT
+    PM --> DOMAIN
+    SKM --> BUILTIN
+
+    ENG -.-> MS & MG & ML & MA & MPD & MDD
+    DES -.-> MF & MS & MN & MAT
+    PM2 -.-> MS & ML & MA & MN & MF
+    PROD -.-> MS & MN & MA & ML & MGC & MGM
+    CR -.-> MCR
+
+    MGMT -->|creates and customizes| DOMAIN

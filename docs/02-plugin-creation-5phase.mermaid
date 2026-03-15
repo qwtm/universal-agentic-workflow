@@ -1,0 +1,49 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Claude (Skill)
+    participant AQ as AskUserQuestion
+    participant FS as File System
+    participant REG as MCP Registry
+    participant VAL as Validator
+
+    Note over U,C: Phase 1 — Discovery
+    U->>C: "I want to create a plugin"
+    C->>AQ: What problem does this plugin solve?
+    AQ-->>C: "Automate our release process"
+    C->>AQ: Who are the primary users?
+    AQ-->>C: "Engineering team"
+    C->>AQ: What external tools does it need?
+    AQ-->>C: "GitHub, Slack, PagerDuty"
+
+    Note over C: Phase 2 — Component Planning
+    C->>C: Analyze requirements →<br/>Determine needed primitives
+    C->>AQ: Confirm component plan:<br/>☑ 3 Skills ☑ MCP ☐ Agents ☐ Hooks
+    AQ-->>C: Confirmed ✓
+
+    Note over C,AQ: Phase 3 — Design & Clarify
+    loop For each skill
+        C->>AQ: Skill name, trigger phrases,<br/>arguments, required tools?
+        AQ-->>C: Skill specification details
+    end
+    C->>AQ: MCP servers: GitHub, Slack, PagerDuty?<br/>Auth type? Required scopes?
+    AQ-->>C: Confirmed integrations
+
+    Note over C,FS: Phase 4 — Implementation
+    C->>FS: Create plugin directory structure
+    C->>FS: Write .claude-plugin/plugin.json<br/>(name, version, description, author)
+
+    loop For each component
+        C->>FS: Create skills/skill-name/SKILL.md<br/>(frontmatter + imperative body)
+        C->>FS: Create skills/skill-name/references/<br/>(detailed supplementary docs)
+    end
+
+    C->>FS: Write .mcp.json<br/>(HTTP endpoints for GitHub, Slack, PagerDuty)
+    C->>FS: Write CONNECTORS.md<br/>(~~source control → GitHub, ~~chat → Slack)
+    C->>FS: Write README.md (user docs)
+
+    Note over C,VAL: Phase 5 — Review & Package
+    C->>VAL: claude plugin validate path
+    VAL-->>C: Validation passed ✓
+    C->>FS: Package → release-manager.plugin
+    C-->>U: Plugin ready for installation<br/>[Rich preview + Accept button]
