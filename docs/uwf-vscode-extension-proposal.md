@@ -1,5 +1,7 @@
 # Proposal: UWF Companion — VS Code Extension
 
+> **Status: Implemented.** The extension described in this document has been built and is available in [`uwf-companion/`](../uwf-companion/). This document is retained as the design record and rationale for the implementation decisions. For usage, build, and test instructions, see [`uwf-companion/README.md`](../uwf-companion/README.md).
+
 ## Overview
 
 A VS Code extension that surfaces live data from the UWF SQLite skill databases directly inside the editor. As agents run and write to the databases, the extension reflects those changes in real time — giving developers a single-pane view of every decision, requirement, finding, and open question across the active workflow.

@@ -15,12 +15,11 @@ The orchestrator is not a fixed persona. It assumes **archetypes** (implemented 
 
 | UWF Concept | Copilot Primitive | Location | Rationale |
 |---|---|---|---|
-| Orchestrator behavior | `AGENTS.md` / `copilot-instructions.md` | `.github/copilot-instructions.md` | Always-on project context and orchestration rules |
-| Archetypes (PM, SWE) | **Skills** (`.github/skills/<archetype>/SKILL.md`) | `.github/skills/project-manager/`, `.github/skills/software-developer/` | Loaded on demand when the orchestrator determines relevance. Avoids static context bloat. Each archetype bundles its own stage sequencing, quality gates, and domain vocabulary. |
-| Workflow stages | **Custom Agents** (`.github/agents/<stage>.agent.md`) | `.github/agents/` | Each stage is an isolated agent profile with scoped tools, prompt, and MCP access. Subagent isolation keeps context windows clean. |
-| Semi-guided prompts | **Prompt Files** (`.github/prompts/<action>.prompt.md`) | `.github/prompts/` | Reusable `/slash` commands for human-orchestrated mode. E.g., `/intake`, `/discover`, `/plan-timeline`. |
-| Quality gates / hooks | **Hooks** (`hooks.json`) | `.github/hooks/` | Event-driven automation on `sessionStart`, `sessionEnd`, `userPromptSubmitted`. Enforce deterministic policies (traceability checks, status enum validation) that the model must not skip. |
-| Always-on coding standards | **Instructions** (`.github/instructions/*.instructions.md`) | `.github/instructions/` | File-pattern-scoped rules. E.g., `markdown.instructions.md` for story format enforcement, `yaml.instructions.md` for ADR schema compliance. |
+| Orchestrator behavior | `copilot-instructions.md` | `.github/copilot-instructions.md` | Always-on project context and orchestration rules |
+| Archetypes (PM, SWE, SA, Forensic) | **Skills** (`.github/skills/uwf-{name}/SKILL.md`) | `.github/skills/uwf-project_manager/`, `.github/skills/uwf-sw_dev/`, `.github/skills/uwf-solutions_architect/`, `.github/skills/uwf-forensic-analyst/` | Loaded at orchestrator startup for the requested persona. Each archetype bundles `SKILL.md` (agent-readable spec), `stages.yaml` (authoritative stage/gate definitions), and `run.mjs` (gate-check and stage-list CLI script). |
+| Workflow stages | **Custom Agents** (`.github/agents/uwf-{role}-{job}.agent.md`) | `.github/agents/` | Each stage is an isolated agent profile with scoped tools and prompt. Subagent isolation keeps context windows clean. |
+| Entry-point prompts | **Prompt Files** (`.github/prompts/*.prompt.md`) | `.github/prompts/` | Human-facing triggers that start a workflow run by invoking the orchestrator with a persona argument. |
+| Always-on coding standards | **Instructions** (`.github/instructions/*.instructions.md`) | `.github/instructions/` | File-pattern-scoped rules applied automatically across the workspace. |
 
 ---
 
@@ -119,16 +118,16 @@ The fundamental challenge for brownfield projects is that intent was never recor
 
 Every workflow begins here. For greenfield projects, Phase 1 starts from scratch. For brownfield projects, Phase 1 reads `forensic-br.json` as its starting state and validates or replaces provisional entries. The goal is situational awareness and constraint capture.
 
-| Stage | Agent Profile | Purpose |
+| Stage | Agent | Purpose |
 |---|---|---|
-| **Intake** | `uwf-intake.agent.md` | Parse the request. Classify scope (task, feature, epic, project). Identify actors, constraints, and initial domain terms. |
-| **Discovery** | `uwf-discovery.agent.md` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. Produce a lay-of-the-land summary. |
-| **Requirements** | `uwf-requirements.agent.md` | Elicit and structure functional + non-functional requirements. Output structured user stories (see Story Schema below). |
-| **ADR** | `uwf-adr.agent.md` | Capture architectural decisions using a standard ADR template. Link each decision to the requirement(s) it resolves. |
-| **Risk Planner** | `uwf-core-risk-planner.agent.md` | Identify and document project-level execution risks: schedule, dependency, technical-debt, and external. Produce a risk register. Appends to uwf-br layer 1; flags blocking dependency risks in layer 2. Feeds slippage risk signals into user stories for the Refinement stage. |
-| **Security Planner** | `uwf-core-security-plan.agent.md` | Threat model the proposed scope. Identify attack surfaces, data classification, auth/authz requirements. Output security stories or constraints. |
-| **Test Planner** | `uwf-core-test-planner.agent.md` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests, test data requirements. |
-| **Blueprint** | `uwf-core-blueprint.agent.md` | Synthesize all First-phase outputs into the Canonical Build Spec (uwf-cbs) SQLite database and initialize the Build Record (uwf-br) strata 0–4. Produces the machine-readable handoff artifact from Phase 1 to Phase 2. |
+| **Intake** | Persona-specific intake agent (e.g. `uwf-sw_dev-intake`, `uwf-project_manager-intake`, `uwf-solutions_architect-design-planner`) | Parse the request. Classify scope. Identify actors, constraints, and initial domain terms. |
+| **Discovery** | `uwf-core-discovery` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. |
+| **Requirements** | `uwf-core-requirements` | Elicit and structure functional + non-functional requirements. Output structured user stories. |
+| **ADR** | `uwf-core-adr` | *(Conditional)* Capture architectural decisions using the `uwf-adr` skill. Conditional on requirements flagging `ADR:` items. |
+| **Risk Planner** | `uwf-core-risk-planner` | Identify and document project-level execution risks: schedule, dependency, technical-debt, and external. Produce a risk register. Appends to `uwf-br` layer 1; flags blocking dependency risks in layer 2. |
+| **Security Planner** | `uwf-core-security-plan` | *(Conditional)* Threat model the proposed scope. Conditional on requirements flagging security-sensitive items. |
+| **Test Planner** | `uwf-core-test-planner` | Define the test strategy: unit/integration/E2E ratio, coverage targets, critical path tests. |
+| **Blueprint** | `uwf-core-blueprint` | Synthesize all Phase 1 outputs into the Canonical Build Spec (`uwf-cbs`) SQLite database and initialize the Build Record (`uwf-br`) strata 0–4. Produces the machine-readable handoff artifact from Phase 1 to Phase 2. |
 
 #### Phase 1 Brownfield Behavior — Per-Stage
 
@@ -149,19 +148,20 @@ When `forensic-br.json` is present (brownfield mode), each Phase 1 stage applies
 
 #### Archetype: Project Manager
 
-| Stage | Agent Profile | Skill (persona) | Purpose |
+| Stage | Agent | Skill (persona) | Purpose |
 |---|---|---|---|
-| **Intake (PM)** | `uwf-pm-intake.agent.md` | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
-| **Timeline Planner** | `uwf-timeline-planner.agent.md` | — | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact. |
-| **Reviewer** | `uwf-pm-reviewer.agent.md` | `uwf-reviewer` (`Persona: pm`) | Validate plan completeness: timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. |
+| **Intake (PM)** | `uwf-project_manager-intake` | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
+| **Timeline Planner** | `uwf-project_manager-timeline-planner` | — | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact and issues backlog. |
+| **Reviewer** | `uwf-project_manager-reviewer` | `uwf-reviewer` (`Persona: pm`) | Validate plan completeness: timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. |
 
 #### Archetype: Software Developer
 
-| Stage | Agent Profile | Skill (persona) | Purpose |
+| Stage | Agent | Skill (persona) | Purpose |
 |---|---|---|---|
-| **Intake (SWE)** | `uwf-swe-intake.agent.md` | — | Decompose requirements into implementation tasks. Identify files, modules, and interfaces to touch. |
-| **Work Planner** | `uwf-work-planner.agent.md` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
-| **Reviewer** | `uwf-swe-reviewer.agent.md` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
+| **Intake (SWE)** | `uwf-sw_dev-intake` | — | Scope the active issue: goal, acceptance criteria, constraints, and explicit out-of-scope boundaries. |
+| **Work Planner** | `uwf-sw_dev-work-planner` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
+| **Implementer** | `uwf-issue-implementer` | — | Execute code and infrastructure changes strictly against the approved plan and ADRs. |
+| **Reviewer** | `uwf-sw_dev-reviewer` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
 
 #### Archetype: Solutions Architect
 
@@ -173,13 +173,13 @@ When `forensic-br.json` is present (brownfield mode), each Phase 1 stage applies
 
 ### Phase 3 — Closure (shared across all archetypes)
 
-| Stage | Agent Profile | Purpose |
+| Stage | Agent | Purpose |
 |---|---|---|
-| **Project Tracking** | `uwf-tracking.agent.md` | Populate the local tracking cache. Sync story status, update traceability matrix, append changelog. |
-| **Refinement** | `uwf-refinement.agent.md` | Groom unrefined stories to meet the quality standard (see Quality Controls below). Reject stories that fail completeness checks. |
-| **Acceptance** | `uwf-acceptance.agent.md` | Verify acceptance criteria are met. Run traceability audit: story → ADR → code → test. Flag gaps. |
-| **Snapshot** | `uwf-core-snapshot.agent.md` | Produce `uwf-drs` — the Deterministic Reconstruction Spec. Serialize accepted state with pinned versions, resolved dependency graph, executed build sequence, full ADR set, gap log, and divergence log. Close `uwf-br` layer 5 and append a closure entry to `uwf-changelog`. |
-| **Retro** | `uwf-retro.agent.md` | Post-mortem on the workflow execution. Capture what worked, what didn't, and improvement actions for future iterations. |
+| **Technical Writer** | `uwf-core-technical-writer` | Review and propagate changes from `tmp/workflow-artifacts/` into permanent `./docs/` documentation. |
+| **Refinement** | `uwf-core-refinement` | Groom unrefined stories to the quality standard (field completeness + nine quality controls). On brownfield, acts as the confidence promotion gate. |
+| **Acceptance** | `uwf-core-acceptance` | Verify acceptance criteria are met. Run traceability audit: story → ADR → code → test. Flag gaps. |
+| **Snapshot** | `uwf-core-snapshot` | Produce `uwf-drs` — the Deterministic Reconstruction Spec. Serialize accepted state: pinned versions, resolved dependency graph, full ADR set, gap log, and divergence log. Close `uwf-br` layer 5 and append a closure entry to `uwf-changelog`. |
+| **Retro** | `uwf-core-retro` | Post-mortem on the workflow execution. Capture what worked, what didn't, and improvement actions for future iterations. |
 
 #### Refinement Confidence Promotion Gate (Brownfield Only)
 
@@ -188,11 +188,11 @@ On brownfield projects, Refinement acts as the **confidence promotion gate** in 
 | Confidence Tier at Refinement Entry | Required Action |
 |---|---|
 | `confirmed` | No additional gate. Story proceeds to normal field-completeness and quality checks. |
-| `inferred-strong` | Story proceeds to normal checks. If field-completeness or quality checks fail, the failure is recorded against the story. For **brownfield** stories, `confidence_basis` is required and must summarize the independent artifacts or human rationale that justify the `inferred-strong` classification. |
-| `inferred-weak` | Story is **blocked** unless the human reviewer promotes it to `confirmed` (by providing a traceable source) or accepts it as `inferred-strong` (by citing a second independent artifact). For **brownfield** stories, any promotion decision must populate `confidence_basis` with the traceable source(s) used, and stories that remain `inferred-weak` at the end of the Refinement pass must still include a `confidence_basis` explaining why evidence is insufficient for promotion. Stories that remain `inferred-weak` at the end of the Refinement pass are set to `blocked` status and cannot proceed to Acceptance. |
-| `gap` | Story **cannot pass Refinement**. It must be resolved (promoted to any higher tier by providing evidence) or closed (removed from scope) before Refinement can complete. For **brownfield** stories, any promotion out of `gap` must also update `confidence_basis` to describe the new evidence or rationale. Refinement is blocked until all `gap` stories are resolved or closed. |
+| `inferred-strong` | Story proceeds to normal checks. `confidence_basis` is required and must summarize the independent artifacts or human rationale that justify the classification. |
+| `inferred-weak` | Story is **blocked** unless the human reviewer promotes it to `confirmed` (with a traceable source) or `inferred-strong` (with a second independent artifact). Stories that remain `inferred-weak` at the end of the pass are set to `blocked` and cannot proceed to Acceptance. |
+| `gap` | Story **cannot pass Refinement**. It must be resolved (promoted with evidence) or closed (removed from scope) before Refinement can complete. |
 
-The Refinement Report (`{role}-refinement-report.md`) includes a Brownfield Gap Resolution Table listing every `inferred-weak` and `gap` story with the resolution action taken.
+The Refinement Report (`{prefix}-refinement-report.md`) includes a Brownfield Gap Resolution Table listing every `inferred-weak` and `gap` story with the resolution action taken.
 
 ---
 
@@ -252,181 +252,114 @@ Stories entering Phase 3 must pass these checks:
 
 ---
 
-## On CBS and DRS — Do You Need Them?
+## CBS and DRS — First-Class Artifacts
 
-> Note: Earlier drafts treated CBS and DRS as optional, hand-authored “mega-docs.” In the current design, `uwf-cbs` (Canonical Build Spec database) and `uwf-drs` (Deterministic Reconstruction Spec) are first-class, machine-maintained artifacts produced by the blueprint and snapshot stages. This section is only about whether you need **separate, human-maintained CBS/DRS documents**, not about removing those structured artifacts from the workflow.
+`uwf-cbs` (Canonical Build Spec) and `uwf-drs` (Deterministic Reconstruction Spec) are **first-class, machine-maintained artifacts** produced by the `blueprint` and `snapshot` stages respectively. They are not optional and not hand-authored.
 
-The Canonical Build Spec (CBS) and Deterministic Reconstruction Spec (DRS) in your original doc tried to capture "everything needed to reproduce the project from scratch." That's a real concern, but the framing was overloaded — it blurred several distinct responsibilities:
+### uwf-cbs — Canonical Build Spec (forward-looking)
 
-| Responsibility | Better Analog | Already Covered By |
-|---|---|---|
-| What to build | Software Requirements Specification (IEEE 830) | `uwf-stories` + `uwf-requirements` agent |
-| How it's structured | System Design Document / Architecture spec | `uwf-adrs` + Discovery output |
-| Cross-domain contracts | Interface Control Document (ICD) | ADRs scoped to integration boundaries |
-| Complete parts enumeration | Bill of Materials (BOM) | Traceability Matrix + dependency graph |
-| Build sequencing | Build manifest / CI pipeline definition | `uwf-work-planner` output + CI config |
-| Environment reproduction | IaC + container definitions | Out of scope for UWF (delegate to infra tooling) |
+Produced by `uwf-core-blueprint` at the end of Phase 1. Stored as a SQLite database under `.github/skills/uwf-cbs/` (gitignored) with a human-readable summary at `{output_path}/{prefix}-blueprint.md`.
 
-**Recommendation:** Drop CBS and DRS as standalone artifacts. Instead, ensure the existing artifacts compose into a reproducible picture:
+**Contains:** component inventory, interface contracts, dependency graph, build sequencing constraints, and Phase 1 constraint registry. Provides a machine-readable model so Phase 2 agents know exactly what exists, how components communicate, what depends on what, and in what order things must be built.
 
-- The **Traceability Matrix** is your BOM — it enumerates everything and links it.
-- The **ADR Set** is your architecture record — it captures decisions, not just structure.
-- The **Work Planner output** is your sequencing spec — it orders the build.
-- **Environment reproduction** is a separate concern (Dockerfiles, IaC, lockfiles) that UWF can *validate* but shouldn't *own*.
+### uwf-drs — Deterministic Reconstruction Spec (backward-looking)
 
-If you genuinely need a single "hand this to a new team and they can rebuild everything" artifact for enterprise compliance, make it a **skill** (`uwf-cbs` skill) that *generates* a composite document by assembling existing artifacts — not a parallel source of truth.
+Produced by `uwf-core-snapshot` at the end of Phase 3. Stored as a JSON file at `{output_path}/{prefix}-drs.json`.
 
+**Contains:** accepted components with pinned versions, resolved dependency graph, executed build sequence, full ADR set with rationale, confidence scores for brownfield-inferred entries, gap log, and divergence log. Enables a cold-starting AI agent to reconstruct or extend the system without re-deriving prior decisions.
+
+Schema: [`docs/artifacts/uwf-br.md`](artifacts/uwf-br.md).
 ---
 
-## Gap Analysis — What's Missing?
+## Gap Analysis — Open Items
 
-| Gap | Proposed Addition | Primitive |
+| Gap | Status | Notes |
 |---|---|---|
-| **Estimation** | No stage for effort estimation or complexity scoring. Refinement assumes points exist but nothing produces them. | Add `uwf-estimation.agent.md` between Refinement and Acceptance, or fold into Refinement. |
-| ~~**Risk Register**~~ | ~~Security Planner covers threats but not project-level risks (schedule, scope, resource, technical debt).~~ | **Addressed.** `uwf-core-risk-planner.agent.md` added to Phase 1 (after `adr`, before `security-planner`). Produces a risk register appended to uwf-br layer 1. Blocking dependency risks flagged in layer 2. Slippage risk signals traced to user stories via `slippage_risk_signal` field. |
-| **Definition of Done** | Quality Controls define story-level checks but there's no explicit DoD for the workflow itself. | Add a `dod.instructions.md` that hooks enforce. |
-| **Handoff Protocol** | No formal contract for how one stage passes output to the next. Currently implicit. | Define a `handoff-contract.instructions.md` specifying required output schema per stage. Hooks validate on stage transition. |
-| **Context Carryover** | In agent-orchestrated mode, how does the orchestrator pass accumulated state between subagent invocations? | Use the `/nextturn` pattern you've already designed — subagents write progress to files, orchestrator reads on resume. Formalize as a skill. |
-| **Archetype Composition** | PM and SWE archetypes are mutually exclusive in Phase 2. Some workflows need both (plan then build). | Allow archetype chaining: Phase 2a (PM) → Phase 2b (SWE). The orchestrator skill should define valid chains. |
-
+| **Estimation** | Open | No stage for effort estimation or complexity scoring. `refinement` assumes story points exist but nothing produces them. Consider folding into `refinement` or adding a dedicated stage. |
+| **Risk Register** | ✅ Addressed | `uwf-core-risk-planner` added to Phase 1 (after `adr`, before `security-plan`). Produces a risk register appended to `uwf-br` layer 1. Blocking dependency risks flagged in layer 2. Slippage risk signals traced to user stories via `slippage_risk_signal` field. |
+| **Solutions Architect archetype** | ✅ Addressed | `uwf-solutions_architect` persona added with `design-planner` and `reviewer` agents. Delivers a System Design Document as the primary artifact. |
+| **Brownfield pre-phase** | ✅ Addressed | `uwf-forensic-analyst` persona implements the five-stage forensic pre-phase and produces `forensic-br.json` with confidence-scored entries. |
+| **Context Carryover** | ✅ Addressed | Subagents write progress to files under `tmp/workflow-artifacts/`; orchestrator reads on resume. State tracked in `tmp/uwf-state.json` via `uwf-state-manager`. |
+| **Definition of Done** | Open | Quality Controls define story-level checks but there is no explicit workflow-level DoD that hooks enforce. |
+| **Archetype Composition** | Open | PM and SWE archetypes are mutually exclusive in Phase 2. Some workflows need both (plan then build). Archetype chaining — e.g. `project_manager` → `sw_dev` — is not yet formalized in the orchestration engine. |
 ---
 
-## Proposed Repository Layout
+## Repository Layout
+
+The actual layout of the repository as shipped:
 
 ```
 universal-agentic-workflow/
 ├── .github/
-│   ├── copilot-instructions.md          # Always-on orchestrator context
-│   ├── agents/
-│   │   ├── uwf-intake.agent.md          # Phase 1
-│   │   ├── uwf-discovery.agent.md
-│   │   ├── uwf-requirements.agent.md
-│   │   ├── uwf-adr.agent.md
-│   │   ├── uwf-security-planner.agent.md
-│   │   ├── uwf-test-planner.agent.md
-│   │   ├── uwf-pm-intake.agent.md       # Phase 2: PM
-│   │   ├── uwf-timeline-planner.agent.md
-│   │   ├── uwf-pm-reviewer.agent.md
-│   │   ├── uwf-swe-intake.agent.md      # Phase 2: SWE
-│   │   ├── uwf-work-planner.agent.md
-│   │   ├── uwf-swe-reviewer.agent.md
-│   │   ├── uwf-tracking.agent.md        # Phase 3
-│   │   ├── uwf-refinement.agent.md
-│   │   ├── uwf-acceptance.agent.md
-│   │   ├── uwf-core-snapshot.agent.md
-│   │   └── uwf-retro.agent.md
-│   ├── skills/
-│   │   ├── project-manager/
-│   │   │   └── SKILL.md                 # PM archetype definition
-│   │   ├── software-developer/
-│   │   │   └── SKILL.md                 # SWE archetype definition
-│   │   ├── uwf-cbs/
-│   │   │   └── SKILL.md                 # Composite build spec generator
-│   │   ├── uwf-snapshot/
-│   │   │   └── SKILL.md                 # Snapshot stage — uwf-drs producer
-│   │   └── uwf-nextturn/
-│   │       └── SKILL.md                 # Context carryover protocol
-│   ├── instructions/
-│   │   ├── story-format.instructions.md  # Enforces story schema on *.md
-│   │   ├── adr-format.instructions.md    # Enforces ADR template
-│   │   ├── handoff-contract.instructions.md
-│   │   └── dod.instructions.md
+│   ├── copilot-instructions.md                  # Always-on orchestration rules
+│   ├── agents/                                  # Stage agents (uwf-{role}-{job}.agent.md)
+│   │   ├── uwf-core-orchestrator.agent.md       # Single orchestrator entry point
+│   │   ├── uwf-core-acceptance.agent.md         # Phase 3: acceptance gate
+│   │   ├── uwf-core-adr.agent.md                # Phase 1: architectural decisions
+│   │   ├── uwf-core-blueprint.agent.md          # Phase 1: blueprint + uwf-cbs init
+│   │   ├── uwf-core-discovery.agent.md          # Phase 1: workspace discovery
+│   │   ├── uwf-core-project-tracking.agent.md  # State management / phase transitions
+│   │   ├── uwf-core-refinement.agent.md         # Phase 3: story quality gate
+│   │   ├── uwf-core-requirements.agent.md       # Phase 1: requirements
+│   │   ├── uwf-core-retro.agent.md              # Phase 3: retrospective
+│   │   ├── uwf-core-risk-planner.agent.md       # Phase 1: risk register
+│   │   ├── uwf-core-security-plan.agent.md      # Phase 1: threat model
+│   │   ├── uwf-core-snapshot.agent.md           # Phase 3: uwf-drs producer
+│   │   ├── uwf-core-technical-writer.agent.md   # Phase 3: docs update
+│   │   ├── uwf-core-test-planner.agent.md       # Phase 1: test strategy
+│   │   ├── uwf-sw_dev-intake.agent.md           # sw_dev Phase 1: issue intake
+│   │   ├── uwf-sw_dev-work-planner.agent.md     # sw_dev Phase 2: work plan
+│   │   ├── uwf-sw_dev-reviewer.agent.md         # sw_dev Phase 2: review gate
+│   │   ├── uwf-issue-implementer.agent.md       # sw_dev Phase 2: implementation
+│   │   ├── uwf-project_manager-intake.agent.md  # pm Phase 1: project intake
+│   │   ├── uwf-project_manager-timeline-planner.agent.md  # pm Phase 2: roadmap
+│   │   ├── uwf-project_manager-reviewer.agent.md          # pm Phase 2: review gate
+│   │   ├── uwf-solutions_architect-design-planner.agent.md  # sa Phase 1+2: SDD
+│   │   ├── uwf-solutions_architect-reviewer.agent.md        # sa Phase 2: review gate
+│   │   ├── uwf-forensic-analyst-repo-audit.agent.md         # forensic pre-phase 1
+│   │   ├── uwf-forensic-analyst-artifact-harvest.agent.md   # forensic pre-phase 2
+│   │   ├── uwf-forensic-analyst-intent-inference.agent.md   # forensic pre-phase 3
+│   │   ├── uwf-forensic-analyst-confidence-score.agent.md   # forensic pre-phase 4
+│   │   └── uwf-forensic-analyst-gap-report.agent.md         # forensic pre-phase 5
+│   ├── skills/                                  # Behavior modules (SKILL.md + scripts)
+│   │   ├── uwf-orchestration-engine/            # Core engine behavior + stage-tracker.mjs
+│   │   ├── uwf-sw_dev/                          # sw_dev persona (stages.yaml + run.mjs)
+│   │   ├── uwf-project_manager/                 # pm persona (stages.yaml + run.mjs)
+│   │   ├── uwf-solutions_architect/             # sa persona (stages.yaml + run.mjs)
+│   │   ├── uwf-forensic-analyst/               # forensic persona (stages.yaml + run.mjs)
+│   │   ├── uwf-adr/                            # ADR creation (adrs.mjs, adr-schema.yaml)
+│   │   ├── uwf-cbs/                            # Blueprint stage (cbs.mjs)
+│   │   ├── uwf-discovery/                      # Discovery DB (discovery.mjs)
+│   │   ├── uwf-local-tracking/                 # Issue tracking DB (issues.mjs)
+│   │   ├── uwf-question-protocol/              # Q&A protocol (questions.mjs)
+│   │   ├── uwf-refinement/                     # Story quality gate behavior
+│   │   ├── uwf-requirements/                   # Requirements DB (requirements.mjs)
+│   │   ├── uwf-review/                         # Shared review infrastructure (review.mjs)
+│   │   ├── uwf-reviewer/                       # Archetype-aware reviewer (pm/dev/arch)
+│   │   ├── uwf-risk-planner/                   # Risk register behavior
+│   │   ├── uwf-snapshot/                       # Snapshot stage behavior
+│   │   ├── uwf-solutions_architect/            # Solutions-architect archetype (persona + shared skill in same directory)
+│   │   ├── uwf-state-manager/                  # Workflow state (state.mjs)
+│   │   └── uwf-threat-model/                   # STRIDE threat model templates
 │   ├── prompts/
-│   │   ├── intake.prompt.md             # /intake
-│   │   ├── discover.prompt.md           # /discover
-│   │   ├── plan-timeline.prompt.md      # /plan-timeline
-│   │   ├── refine.prompt.md             # /refine
-│   │   └── accept.prompt.md             # /accept
-│   └── hooks/
-│       ├── validate-story-schema/
-│       │   ├── README.md
-│       │   └── hooks.json               # Runs on sessionEnd
-│       └── enforce-traceability/
-│           ├── README.md
-│           └── hooks.json               # Runs on PR creation
-├── AGENTS.md                             # Cross-agent project instructions
-├── artifacts/
-│   ├── stories/                          # user_stories.md + user_story_tracker.csv
-│   ├── adrs/
-│   ├── traceability/
-│   ├── sprint/
-│   └── changelog/
+│   │   └── uwf-start-project-planning.prompt.md  # Entry point for project_manager workflow
+│   └── instructions/
+│       ├── uwf-core.instructions.md            # Always-on orchestration rules (scope: **)
+│       ├── docs-writing.instructions.md        # Docs conventions (scope: docs/**/*.md)
+│       └── slides.instructions.md             # Slide conventions (scope: slides/**)
+├── docs/
+│   ├── adr/                                   # ADR-####-<slug>.md files
+│   ├── artifacts/
+│   │   └── uwf-br.md                          # uwf-br and uwf-drs schema reference
+│   ├── brownfield-path.md                     # Brownfield workflow diagram + handoff contract
+│   ├── uwf-architecture.md                    # This file
+│   ├── uwf-vscode-extension-proposal.md       # UWF Companion extension design doc
+│   └── workflow-output-templates/             # Read-only example outputs per stage
+├── uwf-companion/                             # VS Code extension (live UWF dashboard)
+│   ├── .github/                               # Companion-specific agents and skills
+│   └── README.md
+├── tmp/                                       # Runtime artifacts (gitignored)
+│   ├── workflow-artifacts/                    # Active stage outputs ({prefix}-*.md, *.json)
+│   └── uwf-state.json                        # Workflow phase and agent state
 └── README.md
-```
-
----
-
-## Example Agent Profile
-
-```markdown
----
-name: uwf-requirements
-description: >
-  Elicit and structure functional and non-functional requirements
-  from intake and discovery outputs. Produces user stories conforming
-  to the UWF story schema.
-tools:
-  - read_file
-  - edit_file
-  - search_files
----
-
-You are a requirements engineer operating within the Universal Agentic Workflow.
-
-## Inputs
-- `artifacts/stories/` — existing backlog (may be empty)
-- Discovery summary from `uwf-discovery` output
-- Intake classification from `uwf-intake` output
-
-## Outputs
-- New or updated user stories in `artifacts/stories/user_stories.md`
-- Updated tracker in `artifacts/stories/user_story_tracker.csv`
-
-## Behavior
-1. Read all discovery and intake outputs.
-2. For each identified capability or constraint, produce a user story
-   conforming to the story schema defined in
-   `.github/instructions/story-format.instructions.md`.
-3. Assign sequential IDs continuing from the highest existing ID.
-4. Flag any requirement that cannot be decomposed into a single
-   testable story — mark as `epic` for further decomposition.
-5. Do not invent requirements. If ambiguity exists, produce a
-   clarification question rather than an assumption.
-```
-
----
-
-## Example Skill (Archetype)
-
-```markdown
----
-name: project-manager
-description: >
-  PM archetype for the UWF orchestrator. Activates project planning
-  stages and applies portfolio-level reasoning to scope, timeline,
-  and risk decisions.
----
-
-# Project Manager Archetype
-
-When this skill is active, the orchestrator should:
-
-## Stage Sequencing
-1. Phase 1: intake → discovery → requirements → adr → risk-planner → security-planner → test-planner
-2. Phase 2: pm-intake → timeline-planner → pm-reviewer
-3. Phase 3: tracking → refinement → acceptance → retro
-
-## Domain Vocabulary
-- **Milestone**: A time-boxed delivery boundary containing one or more epics.
-- **Epic**: A grouping of related stories that deliver a coherent capability.
-- **Sprint**: A fixed-length iteration (default: 2 weeks) within a milestone.
-
-## Quality Lens
-- Prioritize dependency resolution and critical path identification.
-- Flag stories without business rationale as incomplete.
-- Ensure every milestone has at least one measurable success criterion.
-
-## Handoff Rules
-- Phase 1 → Phase 2: Requires completed ADR set and approved requirements.
-- Phase 2 → Phase 3: Requires approved timeline with no unresolved blockers.
 ```
