@@ -6,6 +6,8 @@ Live data from [Universal Agent Workflow](../) SQLite skill databases, surfaced 
 
 | Command | Description |
 |---|---|
+| `UWF: Open Workflow Dashboard` | Multi-panel operational dashboard with live workflow phase/status, archetype declarations, stage execution summary, and artifact visibility |
+| `UWF: Open Workflow State` | Current workflow phase/status/agent and phase history timeline |
 | `UWF: Open Stages` | Webview table of all workflow stages and their status |
 | `UWF: Open Issues` | Webview table of all issues with milestone/sprint/status |
 | `UWF: Open Requirements` | Requirements viewer (FR/NFR/AC) |
@@ -13,9 +15,11 @@ Live data from [Universal Agent Workflow](../) SQLite skill databases, surfaced 
 | `UWF: Open Discoveries` | Discovery findings and open gaps |
 | `UWF: Open Review Findings` | Quality/security review results |
 | `UWF: Export Report (CSV/JSON)` | Export a snapshot of all databases to `tmp/reports/` |
-| `UWF: Refresh All` | Manually refresh the sidebar tree |
+| `UWF: Refresh All` | Manually refresh the sidebar tree and panels |
 
-The Activity Bar sidebar ("UWF Companion") shows live counts for open issues and active stages. All panels auto-refresh within **300 ms** of any database write.
+The Activity Bar sidebar ("UWF Companion") shows live workflow state, archetype count, planned artifact count, open issues, and active stages. All panels auto-refresh within **300 ms** of any database write.
+
+Each panel now includes an **Open interactive view** action in the top-right that jumps to the primary Workflow Dashboard webview for richer cross-panel insight.
 
 ## Requirements
 
@@ -53,16 +57,21 @@ code --install-extension uwf-companion-0.1.0.vsix
 
 ```
 src/
-  extension.ts                 — activation, command & watcher wiring
+  extension.ts                 — activation, command & watcher wiring, status bar state
+  config/
+    StageConfigLoader.ts       — declarative stage/archetype + expected artifact parser
   watchers/DbWatcher.ts        — fs.watch on each skill dir, 300ms debounce
   providers/
-    WorkflowTreeProvider.ts    — Activity Bar sidebar (live issue/stage counts)
+    WorkflowTreeProvider.ts    — Activity Bar sidebar (live state + counts + archetypes)
+    DashboardPanel.ts          — Webview: primary multi-panel workflow dashboard
+    WorkflowInsights.ts        — live DB + declarative config aggregation
+    WorkflowStatePanel.ts      — Webview: workflow state and phase history
     StagesPanel.ts             — Webview: stage status table
     IssuesPanel.ts             — Webview: issues backlog table
-    RequirementsPanel.ts       — Webview: requirements (stub → full in next release)
-    ReviewPanel.ts             — Webview: review findings (stub)
-    AdrPanel.ts                — Webview: ADRs (stub)
-    DiscoveryPanel.ts          — Webview: discoveries (stub)
+    RequirementsPanel.ts       — Webview: requirements
+    ReviewPanel.ts             — Webview: review findings
+    AdrPanel.ts                — Webview: ADRs
+    DiscoveryPanel.ts          — Webview: discoveries
     PanelRegistry.ts           — Broadcasts DB-change events to all open panels
     webviewUtils.ts            — HTML escaping, badge helpers, page shell
   reporter/
@@ -88,4 +97,4 @@ src/
 npm test
 ```
 
-Tests use Node's built-in `node:test` runner and `better-sqlite3` directly — no VS Code host required.
+Tests use Node's built-in `node:test` runner and `better-sqlite3` directly — no VS Code host required, and include declarative stage-config integrity checks against staged workflow data.

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { StageReader } from "../db/readers/StageReader";
 import { IssuesReader } from "../db/readers/IssuesReader";
 import { WorkflowStateReader } from "../db/readers/WorkflowStateReader";
+import { StageConfigLoader } from "../config/StageConfigLoader";
 
 export class WorkflowTreeItem extends vscode.TreeItem {
   constructor(
@@ -26,11 +27,13 @@ export class WorkflowTreeProvider
   private stageReader: StageReader;
   private issuesReader: IssuesReader;
   private stateReader: WorkflowStateReader;
+  private stageConfigLoader: StageConfigLoader;
 
   constructor(private readonly workspaceRoot: string) {
     this.stageReader = new StageReader(workspaceRoot);
     this.issuesReader = new IssuesReader(workspaceRoot);
     this.stateReader = new WorkflowStateReader(workspaceRoot);
+    this.stageConfigLoader = new StageConfigLoader(workspaceRoot);
   }
 
   refresh() {
@@ -58,12 +61,30 @@ export class WorkflowTreeProvider
           desc = state ? `${state.phase} · ${state.status}` : "—";
         } catch { desc = "unavailable"; }
       }
-      items.push(new WorkflowTreeItem(
-        "Workflow State",
-        vscode.TreeItemCollapsibleState.None,
-        desc,
-        { command: "uwf.openWorkflowState", title: "Open Workflow State", arguments: [] }
-      ));
+    items.push(new WorkflowTreeItem(
+      "Workflow State",
+      vscode.TreeItemCollapsibleState.None,
+      desc,
+      { command: "uwf.openWorkflowState", title: "Open Workflow State", arguments: [] }
+    ));
+
+    const archetypes = this.stageConfigLoader.listWorkflowBlueprints();
+    items.push(new WorkflowTreeItem(
+      `Archetypes (${archetypes.length})`,
+      vscode.TreeItemCollapsibleState.None,
+      archetypes.slice(0, 2).map((w) => w.workflow).join(", ") || "none",
+      { command: "uwf.openDashboard", title: "Open Workflow Dashboard", arguments: [] }
+    ));
+
+    const plannedArtifacts = archetypes.reduce((acc, workflow) => {
+      return acc + workflow.stages.reduce((innerAcc, stage) => innerAcc + stage.outputs.length, 0);
+    }, 0);
+    items.push(new WorkflowTreeItem(
+      `Artifacts (${plannedArtifacts})`,
+      vscode.TreeItemCollapsibleState.None,
+      "declared in stages.yaml",
+      { command: "uwf.openDashboard", title: "Open Workflow Dashboard", arguments: [] }
+    ));
     }
 
     // Stages section

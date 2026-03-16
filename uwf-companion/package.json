@@ -17,6 +17,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "uwf.openDashboard",
+        "title": "UWF: Open Workflow Dashboard"
+      },
+      {
         "command": "uwf.openWorkflowState",
         "title": "UWF: Open Workflow State"
       },
