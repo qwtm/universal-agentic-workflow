@@ -85,6 +85,7 @@ function openDb() {
 /**
  * Read workflow-schema.yaml and CREATE TABLE IF NOT EXISTS for each table.
  * Seeds the single workflow_state row (id=1) if absent.
+ * Also applies lightweight migrations for columns added after initial schema.
  */
 function initTables(db) {
   const workflowSchema = yaml.load(readFileSync(WORKFLOW_SCHEMA_PATH, "utf8"));
@@ -92,6 +93,23 @@ function initTables(db) {
   db.transaction(() => {
     for (const [tableName, tableDef] of Object.entries(workflowSchema.tables)) {
       db.exec(buildCreateTable(tableName, tableDef.columns));
+    }
+
+    // Lightweight migration: add new columns to existing workflow_state tables.
+    // PRAGMA table_info returns one row per column; we check for absence and ALTER TABLE.
+    const existingCols = new Set(
+      db.prepare("PRAGMA table_info(workflow_state)").all().map((c) => c.name)
+    );
+    const allCols = workflowSchema.tables.workflow_state.columns;
+    for (const col of allCols) {
+      if (!existingCols.has(col.name) && !col.primary_key) {
+        let colDef = `${col.type}`;
+        if (col.default !== undefined) {
+          const val = typeof col.default === "string" ? `'${col.default}'` : col.default;
+          colDef += ` DEFAULT ${val}`;
+        }
+        db.exec(`ALTER TABLE workflow_state ADD COLUMN "${col.name}" ${colDef}`);
+      }
     }
 
     const row = db.prepare("SELECT id FROM workflow_state WHERE id = 1").get();

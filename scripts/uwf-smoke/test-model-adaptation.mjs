@@ -161,6 +161,20 @@ console.log("\nTest suite: uwf-model-adaptation / resolve.mjs\n");
   assert("exits 2", r.exitCode === 2);
 }
 
+// 13. --profile flag without value → exit 2 (not exit 1)
+{
+  console.log("13. --profile without value → exit 2");
+  const r = run(["detect", "--profile"]);
+  assert("exits 2", r.exitCode === 2);
+}
+
+// 14. --model flag without value → exit 2 (not exit 0 / silent ignore)
+{
+  console.log("14. --model without value → exit 2");
+  const r = run(["detect", "--model"]);
+  assert("exits 2", r.exitCode === 2);
+}
+
 // ---------------------------------------------------------------------------
 
 console.log(`\n${"─".repeat(50)}`);

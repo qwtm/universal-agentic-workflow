@@ -66,7 +66,11 @@ let resolvedProfile = null;
 let resolvedModel = flags.model ?? null;
 
 // 1. --profile flag (explicit)
-if (flags.profile) {
+if (flags.profile !== undefined) {
+  if (flags.profile === true) {
+    process.stderr.write("Usage error: --profile requires a value (e.g. --profile balanced)\n");
+    process.exit(2);
+  }
   if (!validProfiles.includes(flags.profile)) {
     process.stderr.write(`Error: invalid profile "${flags.profile}". Valid profiles: ${validProfiles.join(", ")}\n`);
     process.exit(1);
@@ -75,7 +79,11 @@ if (flags.profile) {
 }
 
 // 2. --model flag
-if (!resolvedProfile && flags.model) {
+if (!resolvedProfile && flags.model !== undefined) {
+  if (flags.model === true) {
+    process.stderr.write("Usage error: --model requires a value (e.g. --model claude-sonnet)\n");
+    process.exit(2);
+  }
   resolvedProfile = matchModelToProfile(flags.model, modelMap);
   resolvedModel = flags.model;
 }

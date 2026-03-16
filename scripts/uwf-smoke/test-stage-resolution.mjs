@@ -16,7 +16,7 @@
 import { execFileSync, execSync } from "node:child_process";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { writeFileSync, mkdirSync, unlinkSync, existsSync } from "node:fs";
+import { writeFileSync, mkdirSync, unlinkSync, rmSync, existsSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../..");
@@ -157,7 +157,7 @@ stages:
   assert("exits non-zero", !r.ok);
   // Cleanup
   try { unlinkSync(join(tmpSkillDir, "stages.yaml")); } catch {}
-  try { require("node:fs").rmdirSync(tmpSkillDir); } catch {}
+  try { rmSync(tmpSkillDir, { recursive: true, force: true }); } catch {}
 }
 
 // 8. Unknown stage_type → exits 1
@@ -181,7 +181,7 @@ stages:
   const r = run(["list-stages", "--workflow", "test-unknown-type-tmp"]);
   assert("exits non-zero", !r.ok);
   try { unlinkSync(join(tmpSkillDir, "stages.yaml")); } catch {}
-  try { require("node:fs").rmdirSync(tmpSkillDir); } catch {}
+  try { rmSync(tmpSkillDir, { recursive: true, force: true }); } catch {}
 }
 
 // 9. Unsupported trait → exits 1
@@ -205,7 +205,7 @@ stages:
   const r = run(["list-stages", "--workflow", "test-bad-trait-tmp"]);
   assert("exits non-zero", !r.ok);
   try { unlinkSync(join(tmpSkillDir, "stages.yaml")); } catch {}
-  try { require("node:fs").rmdirSync(tmpSkillDir); } catch {}
+  try { rmSync(tmpSkillDir, { recursive: true, force: true }); } catch {}
 }
 
 // ---------------------------------------------------------------------------
