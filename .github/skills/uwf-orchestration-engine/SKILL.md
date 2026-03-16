@@ -19,7 +19,7 @@ Load this skill at orchestrator startup. It governs **how** any persona-driven o
 Every `runSubagent` call **must** embed the following context block inside the `prompt` string so subagents know their operating environment.
 
 > **CRITICAL — tool call structure:** The `runSubagent` tool takes three separate parameters:
-> - `agentName` (string) — the subagent to invoke, e.g. `"uwf-sw_dev-intake"`
+> - `agentName` (string) — the subagent to invoke, e.g. `"uwf-stage-intake"`
 > - `description` (string) — a short 3-5 word task label, e.g. `"Run sw_dev intake stage"`
 > - `prompt` (string) — **always a plain string**; the JSON context block below must be embedded *inside* this string
 >
@@ -31,7 +31,7 @@ Every `runSubagent` call **must** embed the following context block inside the `
 >
 > ✅ **Correct** — embedding the context block inside a descriptive prompt string:
 > ```
-> agentName: "uwf-sw_dev-intake"
+> agentName: "uwf-stage-intake"
 > description: "Run sw_dev intake stage"
 > prompt: |
 >   Run the intake stage for the sw_dev workflow.
@@ -251,11 +251,11 @@ When a reviewer subagent returns findings:
 ## Operating Principles
 
 - **Run the full stage sequence without stopping.** After each gate passes, immediately invoke the next subagent. Do not pause, summarize, or yield between stages.
-- Emit a single-line progress trace before each `runSubagent` call (e.g. `[Stage 3/14] discovery → invoking uwf-core-discovery`). This is the only output allowed mid-sequence.
+- Emit a single-line progress trace before each `runSubagent` call (e.g. `[Stage 3/14] discovery → invoking uwf-stage-discovery`). This is the only output allowed mid-sequence.
 - **Subagent hand-off blocks are internal signals, not stopping points.** When a subagent ends with `Current Stage/Phase:` / `Recommended Next Stage/Phase:`, consume that signal internally and immediately invoke the next stage. Never echo it to the user. Never treat it as a reason to pause or yield.
 - The orchestrator itself **never** emits `Current Stage/Phase:` / `Recommended Next Stage/Phase:` blocks. Those blocks are for subagents only.
 - Never start a dependent stage without its prerequisite artifacts confirmed present (per gate definitions).
-- Do not invent facts; use `uwf-core-discovery` to inspect the workspace when uncertain.
+- Do not invent facts; use `uwf-stage-discovery` to inspect the workspace when uncertain.
 - On queue empty or workflow completion, summarize completion status and offer a retrospective via `uwf-core-retro` if appropriate.
 
 ---

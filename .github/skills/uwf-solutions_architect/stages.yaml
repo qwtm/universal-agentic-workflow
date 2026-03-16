@@ -56,7 +56,7 @@ stages:
           label: "design-intake.md contains Engagement Type"
 
   - name: discovery
-    agent: uwf-core-discovery
+    agent: uwf-stage-discovery
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true

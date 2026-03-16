@@ -71,7 +71,7 @@ node .github/skills/uwf-state-manager/state.mjs read
 node .github/skills/uwf-state-manager/state.mjs init --mode sw_dev
 
 # Advance from intake → discovery
-node .github/skills/uwf-state-manager/state.mjs advance --to discovery --agent uwf-core-discovery --note "Intake complete"
+node .github/skills/uwf-state-manager/state.mjs advance --to discovery --agent uwf-stage-discovery --note "Intake complete"
 
 # Claim / release the agent token
 node .github/skills/uwf-state-manager/state.mjs set-agent --agent uwf-sw_dev-work-planner

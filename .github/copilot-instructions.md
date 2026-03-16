@@ -2,9 +2,9 @@
 
 When running subagents always use the `runSubagent` tool to run the subagent and provide all agentic tools. Never run a subagent by invoking it directly. This ensures the subagent has access to the full suite of tools and adheres to the same rules and constraints as the parent agent.
 
-Subagents that may be utilized by all workflows and do not require to be called in a particular order have the naming convention. `/github/uwf-core-<subagent>.agent.md`
+Subagents that may be utilized by all workflows and do not require to be called in a particular order are infrastructure agents with the naming convention `uwf-core-<name>.agent.md`.
 
-The single entry-point orchestrator is `uwf-core-orchestrator`. It is bootstrapped with a `workflow` argument that names a persona skill. Stage agents that belong to a particular workflow have the naming convention `/github/uwf-<role>-<stage>.agent.md`.
+The single entry-point orchestrator is `uwf-core-orchestrator`. It is bootstrapped with a `workflow` argument that names a persona skill. Canonical stage agents use the naming convention `uwf-stage-{stage}.agent.md`; legacy workflow-specific stage agents that have not yet been migrated use `uwf-{role}-{job}.agent.md`.
 
 ## Non-negotiables
 - Prefer correctness and verifiability over speed.
@@ -13,11 +13,11 @@ The single entry-point orchestrator is `uwf-core-orchestrator`. It is bootstrapp
 - If the user doesn't provide a clear goal, use the orchestrator to ask for one, then pass the answer back to the subagent. If the goal is too broad, ask for it to be narrowed down.
 
 ## Agent bundles
-Agents are defined as `{role}-{job}.agent.md` files grouped into two bundles plus the single core orchestrator.
+Agents follow three naming conventions:
 
-- **core** (`uwf-core-*`) — Generic agents usable by any orchestrator regardless of workflow type. Includes the single `uwf-core-orchestrator` entry point plus stage agents for acceptance, ADRs, discovery, requirements, retro, security planning, technical writing, and test planning.
-- **issues** (`uwf-sw_dev-*`, `uwf-issue-*`) — Stage agents scoped to driving individual work items from intake through implementation, review, and acceptance. Used by the `uwf-sw_dev` persona.
-- **project** (`uwf-project_manager-*`) — Stage agents for macro-level work: scoping a new effort, building a roadmap, and scaffolding the backlog. Used by the `uwf-project_manager` persona.
+- **Canonical stage agents** (`uwf-stage-*`) — stages migrated to the `stage_type` capability architecture. Traits supply behavioral variation; the agent is shared across workflows. Currently migrated: `uwf-stage-intake`, `uwf-stage-discovery`.
+- **Core / infrastructure agents** (`uwf-core-*`) — cross-cutting agents for orchestration, tracking, acceptance, snapshot, and other infrastructure concerns. Reserved for infrastructure; `core` is not used for stage capability agents.
+- **Legacy workflow-specific stage agents** (`uwf-sw_dev-*`, `uwf-issue-*`, `uwf-project_manager-*`, etc.) — persona-bound stage agents that have not yet been migrated to `uwf-stage-*`. These keep their current names until their own migration issue.
 
 All stage agents are coordinated by `uwf-core-orchestrator`, which loads a **persona skill** at runtime to determine which agents to call and in what order.
 

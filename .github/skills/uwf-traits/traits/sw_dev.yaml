@@ -1,6 +1,28 @@
 trait_id: sw_dev
 version: 1
 stage_policies:
+  intake:
+    priority_order:
+      - work_item_goal
+      - acceptance_criteria
+      - constraints
+      - explicit_out_of_scope
+      - known_touched_systems
+      - backlog_context
+    must_address:
+      - objective
+      - acceptance_criteria
+      - constraints
+      - explicit_out_of_scope
+      - known_touched_systems
+      - duplicate_backlog_status
+      - sprint_or_ordering_recommendation
+    question_policy: standard
+    risk_focus:
+      - scope
+      - dependency
+      - implementation
+    evidence_threshold: standard
   discovery:
     priority_order:
       - codebase_facts

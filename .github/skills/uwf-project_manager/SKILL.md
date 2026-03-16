@@ -20,8 +20,8 @@ Persona skill for macro-level project planning: scoping a new effort, producing 
 | Subagent | Role |
 |---|---|
 | `uwf-core-project-tracking` | Phase transitions and state management |
-| `uwf-project_manager-intake` | Capture goals, constraints, stakeholders, work-breakdown strategy |
-| `uwf-core-discovery` | Inspect workspace; surface unknowns |
+| `uwf-stage-intake` | Capture goals, constraints, stakeholders, work-breakdown strategy |
+| `uwf-stage-discovery` | Inspect workspace; surface unknowns |
 | `uwf-core-requirements` | Produce PRD, NFRs, acceptance criteria |
 | `uwf-core-adr` | Create architectural decision records |
 | `uwf-core-risk-planner` | Project-level risk register (schedule, dependency, technical-debt, external risks) |
@@ -49,9 +49,9 @@ Execute stages **in this exact order**. Do not advance past a stage until its ga
 | # | Phase (uwf-state) | Subagent | Purpose |
 |---|---|---|---|
 | 0 | `idea` → `intake` | `uwf-core-project-tracking` | Initialize or read `uwf-state.json`; set phase to `intake`. |
-| 1 | `intake` | `uwf-project_manager-intake` | Capture goal, non-goals, constraints, success metrics, stakeholders, environment, risk tolerance, and work-breakdown strategy. |
+| 1 | `intake` | `uwf-stage-intake` | Capture goal, non-goals, constraints, success metrics, stakeholders, environment, risk tolerance, and work-breakdown strategy. |
 | 2 | `intake` → `discovery` | `uwf-core-project-tracking` | Advance phase to `discovery`. |
-| 3 | `discovery` | `uwf-core-discovery` | Inspect workspace; update intake with findings; surface unknowns. |
+| 3 | `discovery` | `uwf-stage-discovery` | Inspect workspace; update intake with findings; surface unknowns. |
 | 4 | `discovery` → `planning` | `uwf-core-project-tracking` | Advance phase to `planning`. |
 | 5 | `planning` | `uwf-core-requirements` | Produce PRD, NFRs, and acceptance criteria. |
 | 6 | `planning` | `uwf-core-adr` | *(Conditional)* Create ADRs if discovery recommended architectural decisions. |

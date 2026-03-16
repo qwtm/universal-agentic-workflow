@@ -48,6 +48,7 @@ const SCHEMA_PATH = join(__dirname, "stage-schema.yaml");
 const STAGE_CONTRACTS_DIR = join(__dirname, "stage-contracts");
 const TRAITS_DIR = join(__dirname, "..", "uwf-traits", "traits");
 const PROFILES_PATH = join(__dirname, "..", "uwf-model-adaptation", "profiles.yaml");
+const AGENTS_DIR = join(__dirname, "..", "..", "agents");
 
 // ---------------------------------------------------------------------------
 // Stage resolution helpers
@@ -177,8 +178,16 @@ function resolveNewStyleStage(stageDef, modelProfile) {
   const stageOverride = profileData?.stage_overrides?.[resolvedProfile]?.[stage_type];
   const steeringPolicy = stageOverride ? { ...steeringPolicyBase, ...stageOverride } : steeringPolicyBase;
 
+  const resolvedAgent = contract.default_agent;
+
+  // Validate that the resolved agent file exists
+  const agentFilePath = join(AGENTS_DIR, `${resolvedAgent}.agent.md`);
+  if (!existsSync(agentFilePath)) {
+    fail(`Stage "${name}": resolved agent "${resolvedAgent}" not found at ${agentFilePath}. Ensure the agent file exists.`);
+  }
+
   return {
-    resolved_agent: contract.default_agent,
+    resolved_agent: resolvedAgent,
     stage_type,
     trait_ids: traits,
     behavior_policy: behaviorPolicy,

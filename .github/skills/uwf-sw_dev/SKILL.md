@@ -20,8 +20,8 @@ Persona skill for driving individual work items (issues) from intake through imp
 | Subagent | Role |
 |---|---|
 | `uwf-core-project-tracking` | Phase transitions, issue queue management, state management |
-| `uwf-sw_dev-intake` | Scope a single work item; produce intake doc |
-| `uwf-core-discovery` | Inspect codebase; update intake with findings |
+| `uwf-stage-intake` | Scope a single work item; produce intake doc |
+| `uwf-stage-discovery` | Inspect codebase; update intake with findings |
 | `uwf-core-requirements` | Produce requirements doc from intake and discovery |
 | `uwf-core-adr` | Create architectural decision records |
 | `uwf-core-risk-planner` | Project-level risk register (schedule, dependency, technical-debt, external risks) |
@@ -46,9 +46,9 @@ Execute stages **in this exact order** for each active issue. Do not advance pas
 | # | Phase (uwf-state) | Subagent | Purpose |
 |---|---|---|---|
 | 0 | *(queue prep)* | `uwf-core-project-tracking` | Identify the active issue; update workflow context and phase. |
-| 1 | `intake` | `uwf-sw_dev-intake` | Scope the active issue; produce `issues-intake.md`. |
+| 1 | `intake` | `uwf-stage-intake` | Scope the active issue; produce `issues-intake.md`. |
 | 2 | `intake` → `discovery` | `uwf-core-project-tracking` | Advance phase to `discovery`. |
-| 3 | `discovery` | `uwf-core-discovery` | Inspect codebase; update intake with findings; surface unknowns. |
+| 3 | `discovery` | `uwf-stage-discovery` | Inspect codebase; update intake with findings; surface unknowns. |
 | 4 | `discovery` → `planning` | `uwf-core-project-tracking` | Advance phase to `planning`. |
 | 5 | `planning` | `uwf-core-requirements` | Produce requirements doc based on updated intake and discovery. |
 | 6 | `planning` | `uwf-core-adr` | *(Conditional)* Create ADRs if discovery or requirements recommended architectural decisions. |

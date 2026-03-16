@@ -1,6 +1,31 @@
 trait_id: project_manager
 version: 1
 stage_policies:
+  intake:
+    priority_order:
+      - goal_clarity
+      - non_goals
+      - stakeholders
+      - success_metrics
+      - constraints
+      - target_environment
+      - risk_tolerance
+      - work_breakdown
+    must_address:
+      - goal
+      - non_goals
+      - stakeholders
+      - success_metrics
+      - constraints
+      - target_environment
+      - risk_tolerance
+      - work_breakdown_strategy
+    question_policy: aggressive
+    risk_focus:
+      - schedule
+      - dependency
+      - scope
+    evidence_threshold: standard
   discovery:
     priority_order:
       - goal_clarity

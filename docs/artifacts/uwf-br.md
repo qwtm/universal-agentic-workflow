@@ -67,7 +67,7 @@ Records the raw problem context for the workflow run: what exists, what is unkno
 
 | Stage | Agent |
 |---|---|
-| `discovery` | `uwf-core-discovery.agent.md` |
+| `discovery` | `uwf-stage-discovery.agent.md` |
 
 ### Fields
 

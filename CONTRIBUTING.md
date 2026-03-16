@@ -239,8 +239,9 @@ A **stage agent** is a scoped agent profile that performs one stage of a workflo
 3. Add the agent name to `uwf-core-orchestrator.agent.md` `agents:` list.
 
 **Agent naming convention:**
-- Core agents: `uwf-core-<job>` (e.g. `uwf-core-discovery`)
-- Persona-specific agents: `uwf-<persona>-<job>` (e.g. `uwf-sw_dev-intake`)
+- Canonical stage agents: `uwf-stage-<stage>` (e.g. `uwf-stage-intake`, `uwf-stage-discovery`) — for stages migrated to the `stage_type` capability architecture
+- Infrastructure / core agents: `uwf-core-<job>` (e.g. `uwf-core-requirements`) — reserved for cross-cutting infrastructure
+- Legacy workflow-specific stage agents: `uwf-<persona>-<job>` — for stages not yet migrated to canonical `stage_type`
 
 ---
 

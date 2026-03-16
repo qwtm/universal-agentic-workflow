@@ -16,7 +16,9 @@ output_path: ./tmp/workflow-artifacts
 stages:
 
   - name: intake
-    agent: uwf-sw_dev-intake
+    stage_type: intake
+    traits:
+      - sw_dev
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true
@@ -29,6 +31,34 @@ stages:
       checks:
         - type: require_non_empty
           path: "{{output_path}}/issues-intake.md"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Objective"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Acceptance criteria"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Constraints"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Explicit out-of-scope"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Known touched systems"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Duplicate/backlog status"
+          label: "issues-intake.md"
+        - type: require_contains
+          path: "{{output_path}}/issues-intake.md"
+          text: "Sprint/order recommendations"
           label: "issues-intake.md"
 
   - name: discovery
