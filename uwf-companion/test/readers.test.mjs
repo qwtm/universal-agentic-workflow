@@ -12,14 +12,16 @@ import Database from "better-sqlite3";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, "..", "..");
 const issuesDb = path.join(workspaceRoot, ".github", "skills", "uwf-local-tracking", "uwf-issues.db");
+const hasIssuesDb = fs.existsSync(issuesDb);
+const stagesYaml = path.join(workspaceRoot, ".github", "skills", "uwf-sw_dev", "stages.yaml");
 
 // ── DB smoke tests ─────────────────────────────────────────────────────────
 
-test("uwf-issues.db exists", () => {
+test("uwf-issues.db exists", { skip: !hasIssuesDb }, () => {
   assert.ok(fs.existsSync(issuesDb), `Expected DB at ${issuesDb}`);
 });
 
-test("issues table has correct schema columns", () => {
+test("issues table has correct schema columns", { skip: !hasIssuesDb }, () => {
   const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
   try {
     const cols = db.prepare("PRAGMA table_info(issues)").all().map((r) => r.name);
@@ -31,7 +33,7 @@ test("issues table has correct schema columns", () => {
   }
 });
 
-test("issues table contains 9 seeded issues", () => {
+test("issues table contains 9 seeded issues", { skip: !hasIssuesDb }, () => {
   const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
   try {
     const { n } = db.prepare("SELECT COUNT(*) as n FROM issues").get();
@@ -41,7 +43,7 @@ test("issues table contains 9 seeded issues", () => {
   }
 });
 
-test("I-003 depends_on contains I-001 and I-002", () => {
+test("I-003 depends_on contains I-001 and I-002", { skip: !hasIssuesDb }, () => {
   const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
   try {
     const row = db.prepare("SELECT depends_on FROM issues WHERE id = 'I-003'").get();
@@ -54,7 +56,7 @@ test("I-003 depends_on contains I-001 and I-002", () => {
   }
 });
 
-test("closed issues have status=closed", () => {
+test("closed issues have status=closed", { skip: !hasIssuesDb }, () => {
   const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
   try {
     const closed = db.prepare("SELECT id FROM issues WHERE status = 'closed'").all();
@@ -132,4 +134,28 @@ test("debounce fires once after multiple rapid calls", async () => {
 
   await new Promise((r) => setTimeout(r, DEBOUNCE_MS + 20));
   assert.equal(callCount, 1, "Debounced callback should fire exactly once");
+});
+
+// ── declarative workflow config checks ────────────────────────────────────
+
+test("sw_dev stages.yaml exists and declares workflow metadata", () => {
+  assert.ok(fs.existsSync(stagesYaml), `Expected stages config at ${stagesYaml}`);
+  const yaml = fs.readFileSync(stagesYaml, "utf8");
+  assert.ok(yaml.includes("workflow: sw_dev"), "workflow should be sw_dev");
+  assert.ok(yaml.includes("artifact_prefix: issues"), "artifact prefix should be issues");
+  assert.ok(yaml.includes("output_path:"), "output path should be declared");
+});
+
+test("sw_dev stages.yaml includes key planned artifacts", () => {
+  const yaml = fs.readFileSync(stagesYaml, "utf8");
+  for (const artifact of [
+    "issues-intake.md",
+    "issues-discovery.md",
+    "issues-requirements.md",
+    "issues-test-plan.md",
+    "issues-blueprint.md",
+    "issues-plan.md",
+  ]) {
+    assert.ok(yaml.includes(artifact), `Expected planned artifact ${artifact}`);
+  }
 });

@@ -2,6 +2,12 @@
 
 > **Status: Implemented.** The extension described in this document has been built and is available in [`uwf-companion/`](../uwf-companion/). This document is retained as the design record and rationale for the implementation decisions. For usage, build, and test instructions, see [`uwf-companion/README.md`](../uwf-companion/README.md).
 
+## Recent Enhancements (Dashboard + Interactive Drill-down)
+
+The implemented extension now includes a dedicated **Workflow Dashboard** command and sidebar entry. The dashboard consolidates workflow state, stage execution progress, declarative artifact plans, issues, requirements, and discoveries into a multi-panel view. Each panel includes an **Open interactive view ↗** action that opens a richer editor webview for focused exploration.
+
+The dashboard also consumes declarative workflow configuration from `stages.yaml` (archetype, stage agent mapping, and planned outputs) and supports overriding the default path via setting `uwf.workflowStagesPath`.
+
 ## Overview
 
 A VS Code extension that surfaces live data from the UWF SQLite skill databases directly inside the editor. As agents run and write to the databases, the extension reflects those changes in real time — giving developers a single-pane view of every decision, requirement, finding, and open question across the active workflow.
