@@ -1,0 +1,63 @@
+# profiles.yaml — UWF Model Adaptation Profiles
+# Defines model profiles, steering policies, and stage-specific overrides.
+# Loaded by resolve.mjs at runtime.
+
+default_profile: balanced
+
+profiles:
+  compact:
+    steering_policy:
+      instruction_density: expanded
+      include_examples: true
+      step_expansion: true
+      schema_reminders: exhaustive
+      self_check: true
+  balanced:
+    steering_policy:
+      instruction_density: standard
+      include_examples: false
+      step_expansion: true
+      schema_reminders: standard
+      self_check: true
+  reasoning:
+    steering_policy:
+      instruction_density: compact
+      include_examples: false
+      step_expansion: false
+      schema_reminders: concise
+      self_check: true
+
+stage_overrides:
+  compact:
+    discovery:
+      schema_reminders: exhaustive
+  balanced:
+    discovery:
+      schema_reminders: standard
+  reasoning:
+    discovery:
+      schema_reminders: concise
+
+# Model name → profile matching (case-insensitive substring match)
+# First match wins; unknown models fall back to default_profile.
+model_map:
+  compact:
+    - haiku
+    - flash
+    - mini
+    - gpt-3.5
+    - gpt-4o-mini
+  balanced:
+    - sonnet
+    - gpt-4
+    - gpt-4o
+    - gemini-pro
+    - claude-3
+    - llama
+  reasoning:
+    - opus
+    - o1
+    - o3
+    - thinking
+    - claude-3-5
+    - deepseek

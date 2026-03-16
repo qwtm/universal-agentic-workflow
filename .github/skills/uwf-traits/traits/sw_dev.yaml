@@ -1,0 +1,23 @@
+trait_id: sw_dev
+version: 1
+stage_policies:
+  discovery:
+    priority_order:
+      - codebase_facts
+      - touched_systems
+      - integration_points
+      - dependencies
+      - test_surface
+      - unknowns
+    must_address:
+      - touched_systems
+      - interfaces
+      - dependencies
+      - implementation_constraints
+      - test_surface
+    question_policy: standard
+    risk_focus:
+      - technical
+      - dependency
+      - integration
+    evidence_threshold: high

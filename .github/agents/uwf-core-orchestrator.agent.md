@@ -8,7 +8,7 @@ tools:
   - execute
   - read
 user-invokable: true
-argument-hint: "workflow (required): name of the persona skill to load (e.g. project_manager, sw_dev, book_writer)"
+argument-hint: "workflow (required): name of the persona skill to load (e.g. project_manager, sw_dev, book_writer). Optional: --profile <compact|balanced|reasoning> or --model <model_name>"
 agents:
   - uwf-core-discovery
   - uwf-core-requirements
