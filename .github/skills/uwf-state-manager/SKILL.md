@@ -54,6 +54,7 @@ Agents must never write to the database directly. Call the script via terminal a
 | `release-agent` | Release the agent token |
 | `check-ready` | Verify prereqs and mark `ready_for_implementation` |
 | `set-status --status <s> --agent <id>` | Set status (`idle`\|`active`\|`blocked`) |
+| `set-model-profile --profile <p> [--model <model_name>]` | Store resolved model profile for the session |
 | `sync` | Derive `status`/`phase` from `issues.mjs list` counts |
 | `note --agent <id> --note <text>` | Append a history entry |
 
@@ -102,6 +103,8 @@ Defined by `workflow-schema.yaml`.
 | `current_agent` | TEXT | Agent presently holding the token |
 | `artifact_path` | TEXT | Base path for per-stage docs |
 | `ready_for_implementation` | INTEGER | `1` when gate conditions are met |
+| `model_profile` | TEXT | Resolved model profile (`compact`\|`balanced`\|`reasoning`); set at startup |
+| `model_name` | TEXT | Raw model name string passed at startup (optional) |
 
 ### workflow_history (append-only)
 

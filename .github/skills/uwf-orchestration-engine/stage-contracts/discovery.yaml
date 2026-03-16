@@ -1,0 +1,36 @@
+# stage-contracts/discovery.yaml
+# Canonical contract for the discovery stage capability.
+# Loaded by stage-tracker.mjs when resolving a stage with stage_type: discovery.
+
+stage_type: discovery
+version: 1
+default_agent: uwf-core-discovery
+supported_traits:
+  - project_manager
+  - sw_dev
+  - solutions_architect
+  - forensic_analyst
+required_context:
+  - workflow
+  - role
+  - phase
+  - outputPath
+  - statePath
+  - stage_type
+  - trait_ids
+  - model_profile
+  - behavior_policy
+  - steering_policy
+default_behavior_policy:
+  priority_order:
+    - unknowns
+    - constraints
+    - risks
+  must_address:
+    - unknowns
+    - constraints
+    - assumptions
+  question_policy: standard
+  risk_focus: []
+  evidence_threshold: standard
+merge_strategy: ordered_union

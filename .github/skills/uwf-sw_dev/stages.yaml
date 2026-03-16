@@ -32,7 +32,9 @@ stages:
           label: "issues-intake.md"
 
   - name: discovery
-    agent: uwf-core-discovery
+    stage_type: discovery
+    traits:
+      - sw_dev
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true

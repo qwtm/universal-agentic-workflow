@@ -60,7 +60,9 @@ stages:
           label: "project-intake.md"
 
   - name: discovery
-    agent: uwf-core-discovery
+    stage_type: discovery
+    traits:
+      - project_manager
     max_retries: 2
     on_gate_failure: retry
     run_as_subagent: true

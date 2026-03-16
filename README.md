@@ -66,10 +66,13 @@ Provide the repository path or URL when prompted. See [Brownfield Projects](#bro
 ├── agents/               # Stage agents (uwf-{role}-{job}.agent.md)
 ├── skills/               # Swappable behavior modules (uwf-{name}/SKILL.md + scripts)
 │   ├── uwf-orchestration-engine/   # Core engine: gate enforcement, stage loop, runSubagent contract
+│   │   └── stage-contracts/        # Canonical stage capability contracts (discovery.yaml, …)
 │   ├── uwf-sw_dev/                 # Persona: software developer workflow (stages.yaml + run.mjs)
 │   ├── uwf-project_manager/        # Persona: project manager workflow (stages.yaml + run.mjs)
 │   ├── uwf-solutions_architect/    # Persona: solutions architect workflow & archetype (stages.yaml + run.mjs)
 │   ├── uwf-forensic-analyst/       # Persona: brownfield forensic pre-phase (stages.yaml + run.mjs)
+│   ├── uwf-model-adaptation/       # Model profile resolution + steering policy (resolve.mjs)
+│   ├── uwf-traits/                 # Trait registry (traits/*.yaml) — behavior overlays per persona
 │   ├── uwf-adr/                    # ADR creation with 300-point checklist (adrs.mjs)
 │   ├── uwf-cbs/                    # Blueprint stage: Canonical Build Spec DB
 │   ├── uwf-discovery/              # Discovery findings DB (discovery.mjs)
@@ -202,8 +205,81 @@ Every skill directory contains a `SKILL.md` (agent-readable behavior spec) and o
 | `uwf-solutions_architect` | Solutions-architect persona. Governs the architecture-first workflow and defines the SDD schema, interface contract format, NFR format, and traceability matrix requirements. Loaded when `workflow=solutions_architect`. |
 | `uwf-state-manager` | Authoritative source for reading and mutating workflow state (`tmp/uwf-state.json`) and managing phase lifecycle transitions. Operated via `state.mjs`. |
 | `uwf-threat-model` | Generates STRIDE-style threat models with assets, trust boundaries, mitigations, and a verification checklist. Output: `tmp/workflow-artifacts/{prefix}-security-plan.md`. |
+| `uwf-model-adaptation` | Resolves the model profile (`compact`\|`balanced`\|`reasoning`) once at orchestrator startup and emits a structured `steering_policy` injected into every stage invocation. Operated via `resolve.mjs`. |
+| `uwf-traits` | Registry of structured behavior overlays (`project_manager`, `sw_dev`, `solutions_architect`, `forensic_analyst`). Traits are merged by the orchestration layer into a `behavior_policy` for new-style stages. |
 
 > **Swapping skills:** The default tracking skill (`uwf-local-tracking`) uses a local SQLite database. To integrate with GitHub Issues, drop in an alternative skill that maps the same `issues.mjs` interface to the GitHub Issues API. No agent files change.
+
+---
+
+## Stage Capabilities, Traits, and Model Profiles
+
+UWF introduces a three-layer architecture for structured stage behavior:
+
+### 1. Stage Capability (`stage_type`)
+
+A **stage capability** is a canonical, reusable stage contract defined independently of any workflow.
+Currently one stage type is defined: `discovery`. The contract lives at:
+
+```
+.github/skills/uwf-orchestration-engine/stage-contracts/<stage_type>.yaml
+```
+
+Each contract declares the default behavior policy, the list of supported traits, and the default
+agent to invoke.
+
+### 2. Trait Overlay (`traits`)
+
+A **trait** is a structured behavior overlay that customizes how a stage capability runs for a
+specific persona perspective. Traits live at:
+
+```
+.github/skills/uwf-traits/traits/<trait_id>.yaml
+```
+
+Available traits: `project_manager`, `sw_dev`, `solutions_architect`, `forensic_analyst`.
+
+When a stage lists multiple traits, the orchestration layer merges their `stage_policies` in order:
+- `priority_order`, `must_address`, `risk_focus` → ordered union, first appearance wins
+- `question_policy`, `evidence_threshold` → strictest wins
+
+### 3. Model Adaptation Profile (`model_profile`)
+
+A **model profile** is resolved once at orchestrator startup and injected as a `steering_policy`
+into every stage invocation. Three profiles are defined:
+
+| Profile | For | Instruction density | Schema reminders |
+|---|---|---|---|
+| `compact` | Smaller/instruction-following models | `expanded` | `exhaustive` |
+| `balanced` | Mid-tier models (default) | `standard` | `standard` |
+| `reasoning` | Large reasoning models | `compact` | `concise` |
+
+Resolve explicitly: `node .github/skills/uwf-model-adaptation/resolve.mjs detect --profile <name>`
+or let the orchestrator auto-detect via `--model <model_name>`. Unknown inputs fall back to `balanced`.
+
+### Discovery Stage Pilot
+
+The `discovery` stage in both `project_manager` and `sw_dev` has been migrated to the new
+architecture. Each uses `stage_type: discovery` with the appropriate trait:
+
+```yaml
+- name: discovery
+  stage_type: discovery
+  traits: [project_manager]   # or [sw_dev]
+  ...
+```
+
+The orchestrator resolves the full `behavior_policy` and `steering_policy` at list-stages time
+and injects them into the `uwf-core-discovery` invocation context. All other stages remain
+unmodified legacy `agent:` stages.
+
+### Stage Entry Rules
+
+A stage entry in `stages.yaml` must use **exactly one** of:
+- `agent: <subagent-id>` — legacy stage (no trait resolution)
+- `stage_type: <type>` + `traits: [...]` — new-style stage (full resolution)
+
+Using both on the same stage is a hard error; `--list-stages` will exit `1`.
 
 ---
 

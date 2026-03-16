@@ -29,6 +29,10 @@ tables:
         type: INTEGER
         not_null: true
         default: 0
+      - name: model_profile
+        type: TEXT
+      - name: model_name
+        type: TEXT
 
   workflow_history:
     description: "Append-only audit log of phase transitions, status changes, and notes"

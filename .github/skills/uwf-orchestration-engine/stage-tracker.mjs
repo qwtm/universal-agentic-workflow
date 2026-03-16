@@ -45,6 +45,147 @@ import yaml from "js-yaml";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH    = join(__dirname, "uwf-stages.db");
 const SCHEMA_PATH = join(__dirname, "stage-schema.yaml");
+const STAGE_CONTRACTS_DIR = join(__dirname, "stage-contracts");
+const TRAITS_DIR = join(__dirname, "..", "uwf-traits", "traits");
+const PROFILES_PATH = join(__dirname, "..", "uwf-model-adaptation", "profiles.yaml");
+
+// ---------------------------------------------------------------------------
+// Stage resolution helpers
+// ---------------------------------------------------------------------------
+
+/** Load a stage contract YAML by stage_type. Returns null if not found. */
+function loadStageContract(stageType) {
+  const contractPath = join(STAGE_CONTRACTS_DIR, `${stageType}.yaml`);
+  if (!existsSync(contractPath)) return null;
+  return yaml.load(readFileSync(contractPath, "utf8"));
+}
+
+/** Load a trait YAML by trait_id. Returns null if not found. */
+function loadTrait(traitId) {
+  const traitPath = join(TRAITS_DIR, `${traitId}.yaml`);
+  if (!existsSync(traitPath)) return null;
+  return yaml.load(readFileSync(traitPath, "utf8"));
+}
+
+/** Load the model adaptation profiles.yaml. */
+function loadProfiles() {
+  if (!existsSync(PROFILES_PATH)) return null;
+  return yaml.load(readFileSync(PROFILES_PATH, "utf8"));
+}
+
+const QUESTION_POLICY_ORDER = ["minimal", "standard", "aggressive"];
+const EVIDENCE_THRESHOLD_ORDER = ["low", "standard", "high"];
+
+/** Return the stricter of two question_policy values. */
+function stricterQuestionPolicy(a, b) {
+  const ai = QUESTION_POLICY_ORDER.indexOf(a ?? "standard");
+  const bi = QUESTION_POLICY_ORDER.indexOf(b ?? "standard");
+  return QUESTION_POLICY_ORDER[Math.max(ai, bi)] ?? "standard";
+}
+
+/** Return the stricter of two evidence_threshold values. */
+function stricterEvidenceThreshold(a, b) {
+  const ai = EVIDENCE_THRESHOLD_ORDER.indexOf(a ?? "standard");
+  const bi = EVIDENCE_THRESHOLD_ORDER.indexOf(b ?? "standard");
+  return EVIDENCE_THRESHOLD_ORDER[Math.max(ai, bi)] ?? "standard";
+}
+
+/** Ordered union: merge arrays keeping first-appearance order. */
+function orderedUnion(...arrays) {
+  const seen = new Set();
+  const result = [];
+  for (const arr of arrays) {
+    for (const item of (arr ?? [])) {
+      if (!seen.has(item)) { seen.add(item); result.push(item); }
+    }
+  }
+  return result;
+}
+
+/**
+ * Merge the default_behavior_policy from the stage contract with all trait
+ * stage_policies in order. Returns the merged behavior_policy.
+ */
+function mergeBehaviorPolicy(defaultPolicy, traitPolicies) {
+  let merged = {
+    priority_order: [...(defaultPolicy.priority_order ?? [])],
+    must_address:   [...(defaultPolicy.must_address   ?? [])],
+    question_policy: defaultPolicy.question_policy ?? "standard",
+    risk_focus:     [...(defaultPolicy.risk_focus    ?? [])],
+    evidence_threshold: defaultPolicy.evidence_threshold ?? "standard",
+  };
+
+  for (const tp of traitPolicies) {
+    merged.priority_order    = orderedUnion(merged.priority_order, tp.priority_order);
+    merged.must_address      = orderedUnion(merged.must_address, tp.must_address);
+    merged.risk_focus        = orderedUnion(merged.risk_focus, tp.risk_focus);
+    merged.question_policy   = stricterQuestionPolicy(merged.question_policy, tp.question_policy);
+    merged.evidence_threshold = stricterEvidenceThreshold(merged.evidence_threshold, tp.evidence_threshold);
+  }
+
+  return merged;
+}
+
+/**
+ * Resolve a new-style stage (stage_type + traits).
+ * Returns enriched stage object or throws a descriptive error.
+ */
+function resolveNewStyleStage(stageDef, modelProfile) {
+  const { stage_type, traits, name } = stageDef;
+
+  // Load stage contract
+  const contract = loadStageContract(stage_type);
+  if (!contract) {
+    fail(`Stage "${name}": unknown stage_type "${stage_type}". No contract found at stage-contracts/${stage_type}.yaml.`);
+  }
+
+  // Validate traits
+  if (!traits || traits.length === 0) {
+    fail(`Stage "${name}": stage_type requires non-empty traits list.`);
+  }
+
+  // Deduplicate check
+  const seen = new Set();
+  for (const t of traits) {
+    if (seen.has(t)) fail(`Stage "${name}": duplicate trait "${t}" in traits list.`);
+    seen.add(t);
+  }
+
+  // Validate each trait exists and is supported
+  const traitPolicies = [];
+  for (const traitId of traits) {
+    const traitDef = loadTrait(traitId);
+    if (!traitDef) fail(`Stage "${name}": unknown trait "${traitId}". No file found at uwf-traits/traits/${traitId}.yaml.`);
+    if (!contract.supported_traits.includes(traitId)) {
+      fail(`Stage "${name}": trait "${traitId}" is not supported by stage_type "${stage_type}". Supported: ${contract.supported_traits.join(", ")}.`);
+    }
+    const stagePolicy = traitDef.stage_policies?.[stage_type];
+    if (!stagePolicy) fail(`Stage "${name}": trait "${traitId}" has no policy for stage_type "${stage_type}".`);
+    traitPolicies.push(stagePolicy);
+  }
+
+  // Merge behavior policies
+  const behaviorPolicy = mergeBehaviorPolicy(contract.default_behavior_policy, traitPolicies);
+
+  // Resolve model profile steering
+  const profileData = loadProfiles();
+  const resolvedProfile = modelProfile ?? profileData?.default_profile ?? "balanced";
+  const profileDef = profileData?.profiles?.[resolvedProfile];
+  const steeringPolicyBase = { ...(profileDef?.steering_policy ?? {}) };
+
+  // Apply stage-specific overrides
+  const stageOverride = profileData?.stage_overrides?.[resolvedProfile]?.[stage_type];
+  const steeringPolicy = stageOverride ? { ...steeringPolicyBase, ...stageOverride } : steeringPolicyBase;
+
+  return {
+    resolved_agent: contract.default_agent,
+    stage_type,
+    trait_ids: traits,
+    behavior_policy: behaviorPolicy,
+    model_profile: resolvedProfile,
+    steering_policy: steeringPolicy,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // CLI parsing
@@ -145,18 +286,57 @@ function cmdListStages(db) {
   requireFlag("workflow", "list-stages");
   const { stages } = loadStagesYaml(workflow);
   const Q_MJS = ".github/skills/uwf-question-protocol/questions.mjs";
-  const list = stages.map(({ name, agent, max_retries, on_gate_failure, gated, conditional, run_as_subagent, inputs, outputs, advances_phase_to }) => ({
-    name, agent,
-    maxRetries: max_retries ?? 2,
-    onGateFailure: on_gate_failure ?? "retry",
-    gated: gated !== false,
-    conditional: conditional === true,
-    runAsSubagent: run_as_subagent !== false,
-    inputs: inputs ?? [],
-    outputs: outputs ?? [],
-    advancesTo: advances_phase_to ?? null,
-    questionsCheckCmd: `node ${Q_MJS} check --stage ${name}`,
-  }));
+  const modelProfile = flags["model-profile"] ?? null;
+
+  const list = stages.map((stageDef) => {
+    const { name, agent, stage_type, traits, max_retries, on_gate_failure, gated, conditional, run_as_subagent, inputs, outputs, advances_phase_to } = stageDef;
+
+    // Validation: agent and stage_type must not coexist
+    if (agent !== undefined && stage_type !== undefined) {
+      fail(`Stage "${name}": a stage entry must use exactly one of "agent" or "stage_type", not both.`);
+    }
+
+    const base = {
+      name,
+      maxRetries: max_retries ?? 2,
+      onGateFailure: on_gate_failure ?? "retry",
+      gated: gated !== false,
+      conditional: conditional === true,
+      runAsSubagent: run_as_subagent !== false,
+      inputs: inputs ?? [],
+      outputs: outputs ?? [],
+      advancesTo: advances_phase_to ?? null,
+      questionsCheckCmd: `node ${Q_MJS} check --stage ${name}`,
+    };
+
+    if (stage_type !== undefined) {
+      // New-style stage: resolve via stage contract + traits
+      const resolved = resolveNewStyleStage(stageDef, modelProfile);
+      return {
+        ...base,
+        agent: resolved.resolved_agent,
+        stage_type: resolved.stage_type,
+        trait_ids: resolved.trait_ids,
+        resolved_agent: resolved.resolved_agent,
+        behavior_policy: resolved.behavior_policy,
+        model_profile: resolved.model_profile,
+        steering_policy: resolved.steering_policy,
+      };
+    } else {
+      // Legacy stage: keep existing behavior
+      return {
+        ...base,
+        agent,
+        stage_type: null,
+        trait_ids: [],
+        resolved_agent: agent,
+        behavior_policy: null,
+        model_profile: modelProfile,
+        steering_policy: null,
+      };
+    }
+  });
+
   process.stdout.write(JSON.stringify(list, null, 2) + "\n");
   process.exit(0);
 }

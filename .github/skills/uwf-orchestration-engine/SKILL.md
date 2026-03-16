@@ -97,13 +97,45 @@ When the orchestrator is invoked:
    - The `role` value for the invocation contract
    - The subagent roster
    - Persona-specific operating rules
-3. **Run the stage-list script to obtain the authoritative stage sequence:**
+3. **Resolve the model profile** (once; persisted for all stages):
    ```sh
-   node .github/skills/uwf-{workflow}/run.mjs --list-stages
+   node .github/skills/uwf-model-adaptation/resolve.mjs detect [--profile <profile>] [--model <model_name>]
+   ```
+   Capture the JSON output (`profile`, `model_name`, `steering_policy`). Store to workflow state:
+   ```sh
+   node .github/skills/uwf-state-manager/state.mjs set-model-profile \
+     --profile <profile> [--model <model_name>]
+   ```
+   Pass `--profile <profile>` to every subsequent `--list-stages` call via `--model-profile <profile>`.
+4. **Run the stage-list script to obtain the authoritative stage sequence:**
+   ```sh
+   node .github/skills/uwf-{workflow}/run.mjs --list-stages [--model-profile <profile>]
    ```
    Parse the JSON output and record every stage name in order. **This script output is your sole authoritative stage list.** The SKILL.md Stage Sequence table is human-readable documentation only — it may be incomplete or stale. You MUST execute every stage returned by the script in order. Skipping, reordering, or substituting stages based on memory, summarization, or reading the table is a **hard violation**. Conditional stages (ADR, security, test-plan, etc.) are **never skipped** — their gate script auto-passes when not applicable, but you must still invoke the subagent for every stage the script returns.
-4. Initialize state: `node .github/skills/uwf-state-manager/state.mjs init --workflow <workflow>`. Read the current phase to determine the resume point.
-5. Begin executing every stage from the script-supplied list in order, starting from the current phase.
+5. Initialize state: `node .github/skills/uwf-state-manager/state.mjs init --workflow <workflow>`. Read the current phase to determine the resume point.
+6. Begin executing every stage from the script-supplied list in order, starting from the current phase.
+
+### New-style stage context injection
+
+For any stage in the list that has `stage_type` set (new-style stage), embed the additional fields
+in the `runSubagent` prompt context block:
+
+```jsonc
+{
+  "workflow":        "<persona_name>",
+  "role":            "<role>",
+  "phase":           "<current_phase>",
+  "outputPath":      "./tmp/workflow-artifacts",
+  "statePath":       "./tmp/uwf-state.json",
+  "stage_type":      "<stage_type>",
+  "trait_ids":       ["<trait_id>", ...],
+  "model_profile":   "<profile>",
+  "behavior_policy": { /* from stage list output */ },
+  "steering_policy": { /* from stage list output */ }
+}
+```
+
+Legacy stages (`stage_type: null`) use the original context block without these additional fields.
 
 ---
 

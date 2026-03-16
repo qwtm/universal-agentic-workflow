@@ -20,6 +20,8 @@
  *   release-agent                          Release the agent token
  *   check-ready                            Mark ready_for_implementation
  *   set-status --status <s> --agent <id>   Set status (idle|active|blocked)
+ *   set-model-profile --profile <p>        Store resolved model profile
+ *                     [--model <model_name>]
  *   sync                                   Derive workflow status from issues.mjs list
  *   note --agent <id> --note <text>        Append a history entry
  *
@@ -134,6 +136,8 @@ function readState(db) {
     current_agent: row.current_agent,
     artifact_path: row.artifact_path,
     ready_for_implementation: !!row.ready_for_implementation,
+    model_profile: row.model_profile ?? null,
+    model_name: row.model_name ?? null,
     history,
   };
 }
@@ -167,6 +171,7 @@ try {
     case "release-agent": cmdReleaseAgent(db); break;
     case "check-ready":   cmdCheckReady(db); break;
     case "set-status":    cmdSetStatus(db); break;
+    case "set-model-profile": cmdSetModelProfile(db); break;
     case "sync":          cmdSync(db); break;
     case "note":          cmdNote(db); break;
     case "reset":         cmdReset(db); break;
@@ -330,6 +335,21 @@ function cmdSetStatus(db) {
   })();
 
   succeed({ procedure: "set-status", previous_status: prevStatus, status: newStatus, state: readState(db) });
+}
+
+function cmdSetModelProfile(db) {
+  requireFlag("profile", "set-model-profile");
+
+  const profile = flags["profile"];
+  const modelName = flags["model"] ?? null;
+
+  const VALID_PROFILES = ["compact", "balanced", "reasoning"];
+  if (!VALID_PROFILES.includes(profile)) {
+    fail(`Invalid profile "${profile}". Must be one of: ${VALID_PROFILES.join(", ")}.`);
+  }
+
+  updateState(db, { model_profile: profile, model_name: modelName });
+  succeed({ procedure: "set-model-profile", model_profile: profile, model_name: modelName, state: readState(db) });
 }
 
 function cmdSync(db) {
