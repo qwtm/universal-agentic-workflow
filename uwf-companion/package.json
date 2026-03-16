@@ -83,11 +83,9 @@
     "test": "node --test test/**/*.test.mjs"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.5.0",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^2.24.0",
-    "better-sqlite3": "^9.4.3",
     "esbuild": "^0.20.0",
     "typescript": "^5.3.0"
   },

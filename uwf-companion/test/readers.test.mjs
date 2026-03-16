@@ -1,13 +1,13 @@
 /**
  * Integration tests for DB readers and utility logic.
- * Uses better-sqlite3 directly — no VS Code host required.
+ * Uses node:sqlite directly — no VS Code host required.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, "..", "..");
@@ -22,7 +22,7 @@ test("uwf-issues.db exists", (t) => {
 
 test("issues table has correct schema columns", (t) => {
   if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
-  const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
+  const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const cols = db.prepare("PRAGMA table_info(issues)").all().map((r) => r.name);
     for (const col of ["id", "title", "status", "milestone", "sprint", "depends_on"]) {
@@ -35,7 +35,7 @@ test("issues table has correct schema columns", (t) => {
 
 test("issues table contains 9 seeded issues", (t) => {
   if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
-  const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
+  const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const { n } = db.prepare("SELECT COUNT(*) as n FROM issues").get();
     assert.ok(n >= 9, `Expected >= 9 issues, got ${n}`);
@@ -46,7 +46,7 @@ test("issues table contains 9 seeded issues", (t) => {
 
 test("I-003 depends_on contains I-001 and I-002", (t) => {
   if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
-  const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
+  const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const row = db.prepare("SELECT depends_on FROM issues WHERE id = 'I-003'").get();
     assert.ok(row, "I-003 should exist");
@@ -60,7 +60,7 @@ test("I-003 depends_on contains I-001 and I-002", (t) => {
 
 test("closed issues have status=closed", (t) => {
   if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
-  const db = new Database(issuesDb, { readonly: true, fileMustExist: true });
+  const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const closed = db.prepare("SELECT id FROM issues WHERE status = 'closed'").all();
     assert.ok(closed.length >= 1, "Expected at least one closed issue");
@@ -172,7 +172,7 @@ test("stage_runs rows reference workflows that exist in declarative configs", (t
 
   const stagesDb = path.join(workspaceRoot, ".github", "skills", "uwf-orchestration-engine", "uwf-stages.db");
   if (!fs.existsSync(stagesDb)) { t.skip("Stages DB not present in this environment"); return; }
-  const db = new Database(stagesDb, { readonly: true, fileMustExist: true });
+  const db = new DatabaseSync(stagesDb, { open: true, readOnly: true });
   try {
     const rows = db.prepare("SELECT DISTINCT workflow FROM stage_runs").all();
     for (const row of rows) {

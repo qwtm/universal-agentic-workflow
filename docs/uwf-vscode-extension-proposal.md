@@ -70,7 +70,7 @@ src/
 
 **Technology choices:**
 - VS Code Webview API for rich panels (tables, badges, collapsible sections)
-- `better-sqlite3` (sync, no native build required — bundled via esbuild)
+- `node:sqlite` (built-in synchronous SQLite for read-only extension data access)
 - `fs.watch` + debounce (300 ms) for live DB change detection
 - VS Code TreeView API for the Activity Bar sidebar
 

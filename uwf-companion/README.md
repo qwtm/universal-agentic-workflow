@@ -78,7 +78,7 @@ src/
     ReportBuilder.ts           — CSV/JSON export of all DB snapshots
     InterviewerBridge.ts       — Future: launch uwf-interviewer agent
   db/readers/
-    BaseReader.ts              — Read-only better-sqlite3 wrapper base class
+    BaseReader.ts              — Read-only node:sqlite wrapper base class
     IssuesReader.ts            — uwf-issues.db
     AdrReader.ts               — uwf-adrs.db
     DiscoveryReader.ts         — uwf-discoveries.db
@@ -97,4 +97,4 @@ src/
 npm test
 ```
 
-Tests use Node's built-in `node:test` runner and `better-sqlite3` directly — no VS Code host required, and include declarative stage-config integrity checks against staged workflow data.
+Tests use Node's built-in `node:test` runner with `node:sqlite` directly — no VS Code host required, and include declarative stage-config integrity checks against staged workflow data.
