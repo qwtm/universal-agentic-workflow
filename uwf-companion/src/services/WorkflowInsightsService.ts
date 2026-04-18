@@ -46,62 +46,67 @@ export interface WorkflowInsights {
 }
 
 function parseStagesYaml(yamlPath: string): WorkflowConfig | null {
-  const text = fs.readFileSync(yamlPath, "utf8");
-  const lines = text.split(/\r?\n/);
-  const workflow = lines.find((l) => /^workflow:\s*/.test(l))?.replace(/^workflow:\s*/, "").trim() ?? "unknown";
-  const artifactPrefix = lines.find((l) => /^artifact_prefix:\s*/.test(l))?.replace(/^artifact_prefix:\s*/, "").trim() ?? "workflow";
-  const outputPath = lines.find((l) => /^output_path:\s*/.test(l))?.replace(/^output_path:\s*/, "").trim() ?? "./tmp/workflow-artifacts";
+  try {
+    const text = fs.readFileSync(yamlPath, "utf8");
+    const lines = text.split(/\r?\n/);
+    const workflow = lines.find((l) => /^workflow:\s*/.test(l))?.replace(/^workflow:\s*/, "").trim() ?? "unknown";
+    const artifactPrefix = lines.find((l) => /^artifact_prefix:\s*/.test(l))?.replace(/^artifact_prefix:\s*/, "").trim() ?? "workflow";
+    const outputPath = lines.find((l) => /^output_path:\s*/.test(l))?.replace(/^output_path:\s*/, "").trim() ?? "./tmp/workflow-artifacts";
 
-  const stages: WorkflowStageConfig[] = [];
-  let current: WorkflowStageConfig | null = null;
-  let inOutputs = false;
+    const stages: WorkflowStageConfig[] = [];
+    let current: WorkflowStageConfig | null = null;
+    let inOutputs = false;
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
 
-    if (line.startsWith("- name:")) {
-      if (current) stages.push(current);
-      current = {
-        name: line.replace("- name:", "").trim(),
-        agent: "unknown",
-        outputs: [],
-      };
-      inOutputs = false;
-      continue;
+      if (line.startsWith("- name:")) {
+        if (current) stages.push(current);
+        current = {
+          name: line.replace("- name:", "").trim(),
+          agent: "unknown",
+          outputs: [],
+        };
+        inOutputs = false;
+        continue;
+      }
+
+      if (!current) continue;
+
+      if (line.startsWith("agent:")) {
+        current.agent = line.replace("agent:", "").trim();
+        inOutputs = false;
+        continue;
+      }
+
+      if (line.startsWith("outputs:")) {
+        inOutputs = true;
+        continue;
+      }
+
+      if (inOutputs && line.startsWith("- ")) {
+        current.outputs.push(line.replace(/^-\s*/, "").replace(/^"|"$/g, "").trim());
+        continue;
+      }
+
+      if (inOutputs && line && !line.startsWith("#") && !line.startsWith("- ")) {
+        inOutputs = false;
+      }
     }
 
-    if (!current) continue;
+    if (current) stages.push(current);
 
-    if (line.startsWith("agent:")) {
-      current.agent = line.replace("agent:", "").trim();
-      inOutputs = false;
-      continue;
-    }
-
-    if (line.startsWith("outputs:")) {
-      inOutputs = true;
-      continue;
-    }
-
-    if (inOutputs && line.startsWith("- ")) {
-      current.outputs.push(line.replace(/^-\s*/, "").replace(/^"|"$/g, "").trim());
-      continue;
-    }
-
-    if (inOutputs && line && !line.startsWith("#") && !line.startsWith("- ")) {
-      inOutputs = false;
-    }
+    return {
+      file: yamlPath,
+      workflow,
+      artifactPrefix,
+      outputPath,
+      stages,
+    };
+  } catch (error) {
+    console.error(`Failed to read or parse workflow stages YAML at ${yamlPath}:`, error);
+    return null;
   }
-
-  if (current) stages.push(current);
-
-  return {
-    file: yamlPath,
-    workflow,
-    artifactPrefix,
-    outputPath,
-    stages,
-  };
 }
 
 function loadWorkflowConfig(workspaceRoot: string): WorkflowConfig | null {
