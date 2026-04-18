@@ -9,6 +9,21 @@ import { DiscoveryReader } from "../db/readers/DiscoveryReader";
 import { ReviewReader } from "../db/readers/ReviewReader";
 import { AdrReader } from "../db/readers/AdrReader";
 
+// Cache the parsed workflow configuration per workspace root to avoid
+// repeatedly reloading and reparsing stages.yaml on frequent refreshes.
+const workflowConfigCache = new Map<string, { config: ReturnType<typeof loadWorkflowConfig> | null }>();
+
+function getCachedWorkflowConfig(workspaceRoot: string) {
+  const cached = workflowConfigCache.get(workspaceRoot);
+  if (cached) {
+    return cached.config;
+  }
+
+  const config = loadWorkflowConfig(workspaceRoot);
+  workflowConfigCache.set(workspaceRoot, { config });
+  return config;
+}
+
 export interface WorkflowStageConfig {
   name: string;
   agent: string;
@@ -142,22 +157,22 @@ export class WorkflowInsightsService {
     const adrReader = new AdrReader(workspaceRoot);
 
     try {
-      const state = stateReader.exists() ? stateReader.getCurrent() : null;
-      const stageRows = stageReader.exists() ? stageReader.listAll() : [];
-      const issuesRows = issuesReader.exists() ? issuesReader.listAll() : [];
-      const requirementsRows = reqReader.exists() ? reqReader.listAll() : [];
-      const discoveriesRows = discReader.exists() ? discReader.listAll() : [];
-      const adrsRows = adrReader.exists() ? adrReader.listAll() : [];
-      const reviewRuns = reviewReader.exists() ? reviewReader.listReviews() : [];
-      const reviewRows = reviewRuns.flatMap((r) => reviewReader.listFindings(r.id));
+    const state = stateReader.exists() ? stateReader.getCurrent() : null;
+    const stageRows = stageReader.exists() ? stageReader.listAll() : [];
+    const issuesRows = issuesReader.exists() ? issuesReader.listAll() : [];
+    const requirementsRows = reqReader.exists() ? reqReader.listAll() : [];
+    const discoveriesRows = discReader.exists() ? discReader.listAll() : [];
+    const adrsRows = adrReader.exists() ? adrReader.listAll() : [];
+    const reviewRuns = reviewReader.exists() ? reviewReader.listReviews() : [];
+    const reviewRows = reviewRuns.flatMap((r) => reviewReader.listFindings(r.id));
 
-      const config = loadWorkflowConfig(workspaceRoot);
-      const completedStages = stageRows.filter((s) => s.status === "completed").length;
-      const activeStages = stageRows.filter((s) => s.status === "active").length;
-      const openIssues = issuesRows.filter((i) => i.status === "open" || i.status === "active").length;
-      const openDiscoveries = discoveriesRows.filter((d) => d.status !== "closed").length;
+    const config = getCachedWorkflowConfig(workspaceRoot);
+    const completedStages = stageRows.filter((s) => s.status === "completed").length;
+    const activeStages = stageRows.filter((s) => s.status === "active").length;
+    const openIssues = issuesRows.filter((i) => i.status === "open" || i.status === "active").length;
+    const openDiscoveries = discoveriesRows.filter((d) => d.status !== "closed").length;
 
-      const plannedArtifacts = config?.stages.flatMap((s) => s.outputs) ?? [];
+    const plannedArtifacts = config?.stages.flatMap((s) => s.outputs) ?? [];
 
       return {
         generatedAt: new Date().toISOString(),
