@@ -88,3 +88,10 @@ ${scriptTag}
 </body>
 </html>`;
 }
+
+export function sectionHeader(title: string, openCommand?: string): string {
+  const action = openCommand
+    ? `<a style="font-size:12px;opacity:.8;" href="command:${openCommand}">Open interactive view</a>`
+    : "";
+  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h2 style="margin:0;">${escHtml(title)}</h2>${action}</div>`;
+}

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { DiscoveryReader } from "../db/readers/DiscoveryReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const IMPACT_COLORS: Record<string, "red" | "yellow" | "grey"> = {
@@ -19,7 +19,7 @@ export class DiscoveryPanel {
     DiscoveryPanel.panel = vscode.window.createWebviewPanel(
       "uwf.discoveries", "UWF: Discoveries",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("discoveries", (root) => DiscoveryPanel.refresh(root));
     DiscoveryPanel.panel.onDidDispose(() => {
@@ -48,6 +48,6 @@ export class DiscoveryPanel {
         reader.close();
       }
     }
-    DiscoveryPanel.panel.webview.html = pageShell("UWF Discoveries", `<h2>Discovery Findings</h2>${body}`);
+    DiscoveryPanel.panel.webview.html = pageShell("UWF Discoveries", `${sectionHeader("Discovery Findings", "uwf.openDashboard")}${body}`);
   }
 }

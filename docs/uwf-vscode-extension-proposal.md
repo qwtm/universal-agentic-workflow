@@ -2,11 +2,17 @@
 
 > **Status: Implemented.** The extension described in this document has been built and is available in [`uwf-companion/`](../uwf-companion/). This document is retained as the design record and rationale for the implementation decisions. For usage, build, and test instructions, see [`uwf-companion/README.md`](../uwf-companion/README.md).
 
-## Recent Enhancements (Dashboard + Interactive Drill-down)
+## Implementation Update (2026-03)
 
-The implemented extension now includes a dedicated **Workflow Dashboard** command and sidebar entry. The dashboard consolidates workflow state, stage execution progress, declarative artifact plans, issues, requirements, and discoveries into a multi-panel view. Each panel includes an **Open interactive view ↗** action that opens a richer editor webview for focused exploration.
+The extension now includes a production workflow dashboard and deeper integration with declarative stage archetypes:
 
-The dashboard also consumes declarative workflow configuration from `stages.yaml` (archetype, stage agent mapping, and planned outputs) and supports overriding the default path via setting `uwf.workflowStagesPath`.
+- A primary **Workflow Dashboard** webview aggregates state, stage execution, archetypes, and declared-vs-observed artifacts. A companion `WorkflowDashboardPanel` provides a multi-panel view with per-section interactive drill-down (`openDashboardSection`).
+- Sidebar now surfaces **Archetypes** and **Artifacts** counters driven from `.github/skills/*/stages.yaml`.
+- Every data panel includes a top-right **Open interactive view** action to jump back to the dashboard for cross-workflow control/insight.
+- A status bar indicator reflects the live workflow/phase/status for always-on situational awareness.
+- Declarative workflow configuration is read from `stages.yaml` (archetype, stage agent mapping, and planned outputs).
+
+These changes preserve the read-only DB guarantee and keep workflow execution ownership in skill scripts.
 
 ## Overview
 
@@ -65,7 +71,7 @@ src/
 
 **Technology choices:**
 - VS Code Webview API for rich panels (tables, badges, collapsible sections)
-- `better-sqlite3` (sync, no native build required — bundled via esbuild)
+- `node:sqlite` (built-in synchronous SQLite for read-only extension data access)
 - `fs.watch` + debounce (300 ms) for live DB change detection
 - VS Code TreeView API for the Activity Bar sidebar
 

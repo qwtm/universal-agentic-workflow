@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { WorkflowStateReader } from "../db/readers/WorkflowStateReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const STATUS_COLORS: Record<string, "green" | "yellow" | "red" | "grey"> = {
@@ -36,7 +36,7 @@ export class WorkflowStatePanel {
     WorkflowStatePanel.panel = vscode.window.createWebviewPanel(
       "uwf.workflowState", "UWF: Workflow State",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("workflowState", (root) => WorkflowStatePanel.refresh(root));
     WorkflowStatePanel.panel.onDidDispose(() => {
@@ -74,7 +74,7 @@ export class WorkflowStatePanel {
         });
 
         body = `${STATE_CARD_STYLE}
-          <h2>Current State</h2>
+          ${sectionHeader("Current State", "uwf.openDashboard")}
           ${stateBlock}
           <h2>Phase History <span style="font-weight:400;font-size:12px;opacity:.6;">(last 50)</span></h2>
           ${history.length ? historyTable : '<p class="empty">No history yet.</p>'}
