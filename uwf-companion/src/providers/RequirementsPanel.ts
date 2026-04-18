@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { RequirementsReader } from "../db/readers/RequirementsReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const PRIORITY_COLORS: Record<string, "red" | "yellow" | "blue" | "grey"> = {
@@ -19,7 +19,7 @@ export class RequirementsPanel {
     RequirementsPanel.panel = vscode.window.createWebviewPanel(
       "uwf.requirements", "UWF: Requirements",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("requirements", (root) => RequirementsPanel.refresh(root));
     RequirementsPanel.panel.onDidDispose(() => {
@@ -48,6 +48,6 @@ export class RequirementsPanel {
         reader.close();
       }
     }
-    RequirementsPanel.panel.webview.html = pageShell("UWF Requirements", `<h2>Requirements</h2>${body}`);
+    RequirementsPanel.panel.webview.html = pageShell("UWF Requirements", `${sectionHeader("Requirements", "uwf.openDashboard")}${body}`);
   }
 }

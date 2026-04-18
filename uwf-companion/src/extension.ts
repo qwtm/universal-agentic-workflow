@@ -7,9 +7,12 @@ import { DiscoveryPanel } from "./providers/DiscoveryPanel";
 import { IssuesPanel } from "./providers/IssuesPanel";
 import { StagesPanel } from "./providers/StagesPanel";
 import { WorkflowStatePanel } from "./providers/WorkflowStatePanel";
+import { DashboardPanel } from "./providers/DashboardPanel";
 import { PanelRegistry } from "./providers/PanelRegistry";
 import { ReportBuilder } from "./reporter/ReportBuilder";
 import { DbWatcher } from "./watchers/DbWatcher";
+import { collectWorkflowInsights } from "./providers/WorkflowInsights";
+import { WorkflowSectionPanel } from "./providers/WorkflowSectionPanel";
 
 export function activate(context: vscode.ExtensionContext) {
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -19,15 +22,42 @@ export function activate(context: vscode.ExtensionContext) {
 
   const watcher = new DbWatcher();
   const treeProvider = new WorkflowTreeProvider(workspaceRoot);
+  const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+
+  let insightsUpdateTimeout: NodeJS.Timeout | undefined;
+
+  const applyInsightsToStatusBar = (insights: ReturnType<typeof collectWorkflowInsights>) => {
+    statusItem.text = `UWF: ${insights.currentWorkflow ?? "—"} › ${insights.currentPhase ?? "unknown"} (${insights.currentStatus ?? "idle"})`;
+    statusItem.tooltip = "Open UWF workflow dashboard";
+    statusItem.command = "uwf.openDashboard";
+    statusItem.show();
+  };
+
+  const scheduleInsightsRefresh = () => {
+    if (insightsUpdateTimeout) {
+      clearTimeout(insightsUpdateTimeout);
+    }
+
+    insightsUpdateTimeout = setTimeout(() => {
+      const insights = collectWorkflowInsights(workspaceRoot);
+      applyInsightsToStatusBar(insights);
+    }, 300);
+  };
+
+  const refreshGlobalState = () => {
+    treeProvider.refresh();
+    PanelRegistry.refreshAll(workspaceRoot);
+    scheduleInsightsRefresh();
+  };
 
   vscode.window.registerTreeDataProvider("uwf.workflowTree", treeProvider);
 
-  watcher.onRefresh(() => {
-    treeProvider.refresh();
-    PanelRegistry.refreshAll(workspaceRoot);
-  });
+  watcher.onRefresh(refreshGlobalState);
 
   context.subscriptions.push(
+    vscode.commands.registerCommand("uwf.openDashboard", () => {
+      DashboardPanel.show(context, workspaceRoot);
+    }),
     vscode.commands.registerCommand("uwf.openRequirements", () => {
       RequirementsPanel.show(context, workspaceRoot);
     }),
@@ -42,6 +72,10 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("uwf.openWorkflowState", () => {
       WorkflowStatePanel.show(context, workspaceRoot);
+    }),
+    vscode.commands.registerCommand("uwf.openDashboardSection", (sectionId?: string) => {
+      if (!sectionId) return;
+      WorkflowSectionPanel.show(workspaceRoot, sectionId);
     }),
     vscode.commands.registerCommand("uwf.openStages", () => {
       StagesPanel.show(context, workspaceRoot);
@@ -58,11 +92,14 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.window.showInformationMessage(`UWF report exported as ${format}.`);
     }),
     vscode.commands.registerCommand("uwf.refreshAll", () => {
-      treeProvider.refresh();
+      refreshGlobalState();
       vscode.window.showInformationMessage("UWF: Refreshed.");
     }),
+    statusItem,
     { dispose: () => watcher.dispose() }
   );
+
+  refreshGlobalState();
 }
 
 export function deactivate() {}

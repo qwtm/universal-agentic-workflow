@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ReviewReader } from "../db/readers/ReviewReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const SEVERITY_COLORS: Record<string, "red" | "yellow" | "blue" | "grey"> = {
@@ -22,7 +22,7 @@ export class ReviewPanel {
     ReviewPanel.panel = vscode.window.createWebviewPanel(
       "uwf.review", "UWF: Review Findings",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("review", (root) => ReviewPanel.refresh(root));
     ReviewPanel.panel.onDidDispose(() => {
@@ -63,6 +63,6 @@ export class ReviewPanel {
         reader.close();
       }
     }
-    ReviewPanel.panel.webview.html = pageShell("UWF Review", `<h2>Review Findings</h2>${body}`);
+    ReviewPanel.panel.webview.html = pageShell("UWF Review", `${sectionHeader("Review Findings", "uwf.openDashboard")}${body}`);
   }
 }

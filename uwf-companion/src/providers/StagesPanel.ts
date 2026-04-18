@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { StageReader } from "../db/readers/StageReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const STATUS_COLORS: Record<string, "green" | "yellow" | "red" | "grey"> = {
@@ -20,7 +20,7 @@ export class StagesPanel {
     StagesPanel.panel = vscode.window.createWebviewPanel(
       "uwf.stages", "UWF: Stages",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("stages", (root) => StagesPanel.refresh(root));
     StagesPanel.panel.onDidDispose(() => {
@@ -49,6 +49,6 @@ export class StagesPanel {
         reader.close();
       }
     }
-    StagesPanel.panel.webview.html = pageShell("UWF Stages", `<h2>Workflow Stages</h2>${body}`);
+    StagesPanel.panel.webview.html = pageShell("UWF Stages", `${sectionHeader("Workflow Stages", "uwf.openDashboard")}${body}`);
   }
 }

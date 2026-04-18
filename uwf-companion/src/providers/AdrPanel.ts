@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { AdrReader } from "../db/readers/AdrReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const STATUS_COLORS: Record<string, "green" | "yellow" | "red" | "grey"> = {
@@ -20,7 +20,7 @@ export class AdrPanel {
     AdrPanel.panel = vscode.window.createWebviewPanel(
       "uwf.adrs", "UWF: ADRs",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("adrs", (root) => AdrPanel.refresh(root));
     AdrPanel.panel.onDidDispose(() => {
@@ -49,6 +49,6 @@ export class AdrPanel {
         reader.close();
       }
     }
-    AdrPanel.panel.webview.html = pageShell("UWF ADRs", `<h2>Architecture Decision Records</h2>${body}`);
+    AdrPanel.panel.webview.html = pageShell("UWF ADRs", `${sectionHeader("Architecture Decision Records", "uwf.openDashboard")}${body}`);
   }
 }

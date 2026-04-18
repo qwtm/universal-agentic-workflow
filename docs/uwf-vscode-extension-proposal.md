@@ -2,6 +2,18 @@
 
 > **Status: Implemented.** The extension described in this document has been built and is available in [`uwf-companion/`](../uwf-companion/). This document is retained as the design record and rationale for the implementation decisions. For usage, build, and test instructions, see [`uwf-companion/README.md`](../uwf-companion/README.md).
 
+## Implementation Update (2026-03)
+
+The extension now includes a production workflow dashboard and deeper integration with declarative stage archetypes:
+
+- A primary **Workflow Dashboard** webview aggregates state, stage execution, archetypes, and declared-vs-observed artifacts. A companion `WorkflowDashboardPanel` provides a multi-panel view with per-section interactive drill-down (`openDashboardSection`).
+- Sidebar now surfaces **Archetypes** and **Artifacts** counters driven from `.github/skills/*/stages.yaml`.
+- Every data panel includes a top-right **Open interactive view** action to jump back to the dashboard for cross-workflow control/insight.
+- A status bar indicator reflects the live workflow/phase/status for always-on situational awareness.
+- Declarative workflow configuration is read from `stages.yaml` (archetype, stage agent mapping, and planned outputs).
+
+These changes preserve the read-only DB guarantee and keep workflow execution ownership in skill scripts.
+
 ## Overview
 
 A VS Code extension that surfaces live data from the UWF SQLite skill databases directly inside the editor. As agents run and write to the databases, the extension reflects those changes in real time — giving developers a single-pane view of every decision, requirement, finding, and open question across the active workflow.
@@ -59,7 +71,7 @@ src/
 
 **Technology choices:**
 - VS Code Webview API for rich panels (tables, badges, collapsible sections)
-- `better-sqlite3` (sync, no native build required — bundled via esbuild)
+- `node:sqlite` (built-in synchronous SQLite for read-only extension data access)
 - `fs.watch` + debounce (300 ms) for live DB change detection
 - VS Code TreeView API for the Activity Bar sidebar
 

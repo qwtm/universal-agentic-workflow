@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { IssuesReader } from "../db/readers/IssuesReader";
-import { escHtml, badge, renderDynamicTable, pageShell } from "./webviewUtils";
+import { escHtml, badge, renderDynamicTable, pageShell, sectionHeader } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 
 const STATUS_COLORS: Record<string, "green" | "yellow" | "blue" | "grey"> = {
@@ -19,7 +19,7 @@ export class IssuesPanel {
     IssuesPanel.panel = vscode.window.createWebviewPanel(
       "uwf.issues", "UWF: Issues",
       vscode.ViewColumn.One,
-      { enableScripts: false, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
     PanelRegistry.register("issues", (root) => IssuesPanel.refresh(root));
     IssuesPanel.panel.onDidDispose(() => {
@@ -48,6 +48,6 @@ export class IssuesPanel {
         reader.close();
       }
     }
-    IssuesPanel.panel.webview.html = pageShell("UWF Issues", `<h2>Issues Backlog</h2>${body}`);
+    IssuesPanel.panel.webview.html = pageShell("UWF Issues", `${sectionHeader("Issues Backlog", "uwf.openDashboard")}${body}`);
   }
 }

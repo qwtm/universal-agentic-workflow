@@ -17,6 +17,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "uwf.openDashboard",
+        "title": "UWF: Open Workflow Dashboard"
+      },
+      {
         "command": "uwf.openWorkflowState",
         "title": "UWF: Open Workflow State"
       },
@@ -69,6 +73,16 @@
           "icon": "$(database)"
         }
       ]
+    },
+    "configuration": {
+      "title": "UWF Companion",
+      "properties": {
+        "uwf.workflowStagesPath": {
+          "type": "string",
+          "default": ".github/skills/uwf-sw_dev/stages.yaml",
+          "description": "Relative path to declarative workflow stage config used for dashboard archetype/artifact planning insights."
+        }
+      }
     }
   },
   "scripts": {
@@ -76,14 +90,12 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "package": "vsce package",
-    "test": "node --test test/**/*.test.mjs"
+    "test": "npm run build && node --test test/**/*.test.mjs"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.5.0",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^2.24.0",
-    "better-sqlite3": "^9.4.3",
     "esbuild": "^0.20.0",
     "typescript": "^5.3.0"
   },
