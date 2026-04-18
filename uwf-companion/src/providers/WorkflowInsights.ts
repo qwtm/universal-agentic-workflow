@@ -30,7 +30,7 @@ function resolveTemplatePath(template: string, outputPath: string, workspaceRoot
 
 /** Return true when a path string contains glob metacharacters. */
 function isGlobPattern(p: string): boolean {
-  return /[*?[\]{]/.test(p);
+  return /[*?[\]{}]/.test(p);
 }
 
 /** Return true only when `resolved` falls strictly inside `workspaceRoot`. */
