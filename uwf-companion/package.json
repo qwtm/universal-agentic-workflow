@@ -21,10 +21,6 @@
         "title": "UWF: Open Workflow Dashboard"
       },
       {
-        "command": "uwf.openDashboardSection",
-        "title": "UWF: Open Dashboard Section (Internal)"
-      },
-      {
         "command": "uwf.openWorkflowState",
         "title": "UWF: Open Workflow State"
       },
