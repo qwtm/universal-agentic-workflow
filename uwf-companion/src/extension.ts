@@ -10,6 +10,8 @@ import { WorkflowStatePanel } from "./providers/WorkflowStatePanel";
 import { PanelRegistry } from "./providers/PanelRegistry";
 import { ReportBuilder } from "./reporter/ReportBuilder";
 import { DbWatcher } from "./watchers/DbWatcher";
+import { WorkflowDashboardPanel } from "./providers/WorkflowDashboardPanel";
+import { WorkflowSectionPanel } from "./providers/WorkflowSectionPanel";
 
 export function activate(context: vscode.ExtensionContext) {
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -42,6 +44,13 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("uwf.openWorkflowState", () => {
       WorkflowStatePanel.show(context, workspaceRoot);
+    }),
+    vscode.commands.registerCommand("uwf.openDashboard", () => {
+      WorkflowDashboardPanel.show(context, workspaceRoot);
+    }),
+    vscode.commands.registerCommand("uwf.openDashboardSection", (sectionId?: string) => {
+      if (!sectionId) return;
+      WorkflowSectionPanel.show(workspaceRoot, sectionId);
     }),
     vscode.commands.registerCommand("uwf.openStages", () => {
       StagesPanel.show(context, workspaceRoot);

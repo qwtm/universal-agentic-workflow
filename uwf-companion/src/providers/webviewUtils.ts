@@ -1,3 +1,10 @@
+import * as crypto from "node:crypto";
+
+/** Generate a cryptographically random nonce for CSP script-src directives. */
+export function generateNonce(): string {
+  return crypto.randomBytes(16).toString("base64");
+}
+
 /** Escape HTML special characters to prevent injection in webview content. */
 export function escHtml(val: unknown): string {
   return String(val ?? "")
@@ -57,12 +64,14 @@ export function renderDynamicTable(
   return `<table><thead><tr>${headers}</tr></thead><tbody>${bodyRows}</tbody></table>`;
 }
 
-export function pageShell(title: string, body: string): string {
+export function pageShell(title: string, body: string, nonce?: string, scriptContent?: string): string {
+  const scriptPolicy = nonce ? ` script-src 'nonce-${nonce}';` : "";
+  const scriptTag = nonce && scriptContent ? `<script nonce="${nonce}">${scriptContent}</script>` : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';${scriptPolicy}">
 <style>
   body { font-family: var(--vscode-font-family, sans-serif); font-size: 13px; padding: 12px; color: var(--vscode-foreground); background: var(--vscode-editor-background); }
   h2 { margin: 0 0 12px; font-size: 15px; }
@@ -75,6 +84,7 @@ export function pageShell(title: string, body: string): string {
 </head>
 <body>
 ${body}
+${scriptTag}
 </body>
 </html>`;
 }
