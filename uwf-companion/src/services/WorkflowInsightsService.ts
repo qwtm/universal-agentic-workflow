@@ -9,21 +9,6 @@ import { DiscoveryReader } from "../db/readers/DiscoveryReader";
 import { ReviewReader } from "../db/readers/ReviewReader";
 import { AdrReader } from "../db/readers/AdrReader";
 
-// Cache the parsed workflow configuration per workspace root to avoid
-// repeatedly reloading and reparsing stages.yaml on frequent refreshes.
-const workflowConfigCache = new Map<string, { config: ReturnType<typeof loadWorkflowConfig> | null }>();
-
-function getCachedWorkflowConfig(workspaceRoot: string) {
-  const cached = workflowConfigCache.get(workspaceRoot);
-  if (cached) {
-    return cached.config;
-  }
-
-  const config = loadWorkflowConfig(workspaceRoot);
-  workflowConfigCache.set(workspaceRoot, { config });
-  return config;
-}
-
 export interface WorkflowStageConfig {
   name: string;
   agent: string;
@@ -124,22 +109,60 @@ function parseStagesYaml(yamlPath: string): WorkflowConfig | null {
   }
 }
 
+/** mtime-aware cache so stages.yaml is only re-read when the file actually changes. */
+interface ConfigCache {
+  workspaceRoot: string;
+  configPath: string;
+  mtimeMs: number;
+  config: WorkflowConfig | null;
+}
+
+let configCache: ConfigCache | null = null;
+
 function loadWorkflowConfig(workspaceRoot: string): WorkflowConfig | null {
   const conf = vscode.workspace.getConfiguration("uwf");
   const relativePath = conf.get<string>("workflowStagesPath") ?? ".github/skills/uwf-sw_dev/stages.yaml";
   const fullPath = path.join(workspaceRoot, relativePath);
+
+  let resolvedPath: string | null = null;
   if (fs.existsSync(fullPath)) {
-    return parseStagesYaml(fullPath);
+    resolvedPath = fullPath;
+  } else {
+    const skillsDir = path.join(workspaceRoot, ".github", "skills");
+    if (fs.existsSync(skillsDir)) {
+      const skillDirs = fs.readdirSync(skillsDir, { withFileTypes: true }).filter((d) => d.isDirectory());
+      for (const d of skillDirs) {
+        const candidate = path.join(skillsDir, d.name, "stages.yaml");
+        if (fs.existsSync(candidate)) {
+          resolvedPath = candidate;
+          break;
+        }
+      }
+    }
   }
 
-  const skillsDir = path.join(workspaceRoot, ".github", "skills");
-  if (!fs.existsSync(skillsDir)) return null;
-  const skillDirs = fs.readdirSync(skillsDir, { withFileTypes: true }).filter((d) => d.isDirectory());
-  for (const d of skillDirs) {
-    const candidate = path.join(skillsDir, d.name, "stages.yaml");
-    if (fs.existsSync(candidate)) return parseStagesYaml(candidate);
+  if (!resolvedPath) {
+    configCache = null;
+    return null;
   }
-  return null;
+
+  try {
+    const { mtimeMs } = fs.statSync(resolvedPath);
+    if (
+      configCache &&
+      configCache.workspaceRoot === workspaceRoot &&
+      configCache.configPath === resolvedPath &&
+      configCache.mtimeMs === mtimeMs
+    ) {
+      return configCache.config;
+    }
+    const parsed = parseStagesYaml(resolvedPath);
+    configCache = { workspaceRoot, configPath: resolvedPath, mtimeMs, config: parsed };
+    return parsed;
+  } catch (error) {
+    console.error(`Failed to stat workflow stages YAML at ${resolvedPath}:`, error);
+    return null;
+  }
 }
 
 function toRowArray<T>(rows: T[]): Array<Record<string, unknown>> {
@@ -157,22 +180,22 @@ export class WorkflowInsightsService {
     const adrReader = new AdrReader(workspaceRoot);
 
     try {
-    const state = stateReader.exists() ? stateReader.getCurrent() : null;
-    const stageRows = stageReader.exists() ? stageReader.listAll() : [];
-    const issuesRows = issuesReader.exists() ? issuesReader.listAll() : [];
-    const requirementsRows = reqReader.exists() ? reqReader.listAll() : [];
-    const discoveriesRows = discReader.exists() ? discReader.listAll() : [];
-    const adrsRows = adrReader.exists() ? adrReader.listAll() : [];
-    const reviewRuns = reviewReader.exists() ? reviewReader.listReviews() : [];
-    const reviewRows = reviewRuns.flatMap((r) => reviewReader.listFindings(r.id));
+      const state = stateReader.exists() ? stateReader.getCurrent() : null;
+      const stageRows = stageReader.exists() ? stageReader.listAll() : [];
+      const issuesRows = issuesReader.exists() ? issuesReader.listAll() : [];
+      const requirementsRows = reqReader.exists() ? reqReader.listAll() : [];
+      const discoveriesRows = discReader.exists() ? discReader.listAll() : [];
+      const adrsRows = adrReader.exists() ? adrReader.listAll() : [];
+      const reviewRuns = reviewReader.exists() ? reviewReader.listReviews() : [];
+      const reviewRows = reviewRuns.flatMap((r) => reviewReader.listFindings(r.id));
 
-    const config = getCachedWorkflowConfig(workspaceRoot);
-    const completedStages = stageRows.filter((s) => s.status === "completed").length;
-    const activeStages = stageRows.filter((s) => s.status === "active").length;
-    const openIssues = issuesRows.filter((i) => i.status === "open" || i.status === "active").length;
-    const openDiscoveries = discoveriesRows.filter((d) => d.status !== "closed").length;
+      const config = loadWorkflowConfig(workspaceRoot);
+      const completedStages = stageRows.filter((s) => s.status === "completed").length;
+      const activeStages = stageRows.filter((s) => s.status === "active").length;
+      const openIssues = issuesRows.filter((i) => i.status === "open" || i.status === "active").length;
+      const openDiscoveries = discoveriesRows.filter((d) => d.status !== "closed").length;
 
-    const plannedArtifacts = config?.stages.flatMap((s) => s.outputs) ?? [];
+      const plannedArtifacts = config?.stages.flatMap((s) => s.outputs) ?? [];
 
       return {
         generatedAt: new Date().toISOString(),

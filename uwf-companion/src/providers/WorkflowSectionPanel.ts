@@ -46,11 +46,12 @@ export class WorkflowSectionPanel {
 
     // Register this panel with the PanelRegistry so DbWatcher-driven refreshes
     // will re-render the drill-down view on DB writes.
-    PanelRegistry.register(panel, refresh);
+    const registryKey = `section.${sectionId}.${Date.now()}`;
+    PanelRegistry.register(registryKey, refresh);
 
     // Ensure we clean up the registry entry when the panel is disposed.
     panel.onDidDispose(() => {
-      PanelRegistry.unregister(panel);
+      PanelRegistry.unregister(registryKey);
     });
 
     // Initial render.

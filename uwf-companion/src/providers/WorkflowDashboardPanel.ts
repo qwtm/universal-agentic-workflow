@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { escHtml, pageShell } from "./webviewUtils";
+import { escHtml, generateNonce, pageShell } from "./webviewUtils";
 import { PanelRegistry } from "./PanelRegistry";
 import { WorkflowInsightsService } from "../services/WorkflowInsightsService";
 
@@ -78,17 +78,19 @@ export class WorkflowDashboardPanel {
       </div>
       <p class="meta">Archetype <strong>${escHtml(data.archetype)}</strong> · Phase <strong>${escHtml(data.currentPhase)}</strong> · Status <strong>${escHtml(data.status)}</strong> · Artifact root <code>${escHtml(data.artifactPath)}</code></p>
       <div class="grid">${cards}</div>
-      <script>
-        const vscode = acquireVsCodeApi();
-        document.querySelectorAll('button[data-section]').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            vscode.postMessage({ type: 'openSection', sectionId: btn.getAttribute('data-section') });
-          });
-        });
-        document.getElementById('refreshBtn')?.addEventListener('click', () => vscode.postMessage({ type: 'refresh' }));
-      </script>
     `;
 
-    WorkflowDashboardPanel.panel.webview.html = pageShell("UWF Workflow Dashboard", body);
+    const scriptContent = `
+      const vscode = acquireVsCodeApi();
+      document.querySelectorAll('button[data-section]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          vscode.postMessage({ type: 'openSection', sectionId: btn.getAttribute('data-section') });
+        });
+      });
+      document.getElementById('refreshBtn')?.addEventListener('click', () => vscode.postMessage({ type: 'refresh' }));
+    `;
+
+    const nonce = generateNonce();
+    WorkflowDashboardPanel.panel.webview.html = pageShell("UWF Workflow Dashboard", body, nonce, scriptContent);
   }
 }
