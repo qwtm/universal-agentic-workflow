@@ -139,6 +139,191 @@ test("debounce fires once after multiple rapid calls", async () => {
   assert.equal(callCount, 1, "Debounced callback should fire exactly once");
 });
 
+// ── StageConfigLoader / parseStagesYaml unit tests ───────────────────────
+
+/**
+ * Inline reference implementation of parseStagesYaml matching
+ * StageConfigLoader.ts so tests run without a compiled extension.
+ */
+function parseStagesYaml(content, skill) {
+  function cleanValue(value) {
+    return value.trim().replace(/^['\"]|['\"]$/g, "");
+  }
+
+  const lines = content.split(/\r?\n/);
+  let workflow = "";
+  let outputPath = "./tmp/workflow-artifacts";
+  let artifactPrefix = null;
+  const stages = [];
+
+  let current = null;
+  let inOutputs = false;
+  let outputsIndent = 0;
+
+  for (const rawLine of lines) {
+    const indent = rawLine.match(/^\s*/)?.[0].length ?? 0;
+    const trimmed = rawLine.trim();
+    if (!trimmed || trimmed.startsWith("#")) { continue; }
+
+    if (trimmed.startsWith("workflow:")) { workflow = cleanValue(trimmed.slice("workflow:".length)); continue; }
+    if (trimmed.startsWith("output_path:")) { outputPath = cleanValue(trimmed.slice("output_path:".length)); continue; }
+    if (trimmed.startsWith("artifact_prefix:")) { artifactPrefix = cleanValue(trimmed.slice("artifact_prefix:".length)); continue; }
+
+    if (trimmed.startsWith("- name:")) {
+      current = { name: cleanValue(trimmed.slice("- name:".length)), agent: "", advancesPhaseTo: null, outputs: [] };
+      stages.push(current);
+      inOutputs = false;
+      continue;
+    }
+
+    if (!current) { continue; }
+
+    if (inOutputs && indent <= outputsIndent) { inOutputs = false; }
+
+    if (trimmed.startsWith("agent:")) { current.agent = cleanValue(trimmed.slice("agent:".length)); continue; }
+    if (trimmed.startsWith("advances_phase_to:")) { current.advancesPhaseTo = cleanValue(trimmed.slice("advances_phase_to:".length)); continue; }
+
+    if (trimmed === "outputs:") { inOutputs = true; outputsIndent = indent; continue; }
+
+    if (inOutputs && trimmed.startsWith("- ") && indent === outputsIndent + 2) {
+      current.outputs.push(cleanValue(trimmed.slice(2)));
+    }
+  }
+
+  if (!workflow || !stages.length) { return null; }
+  return { workflow, skill, outputPath, artifactPrefix, stages };
+}
+
+test("parseStagesYaml returns null for empty/invalid content", () => {
+  assert.strictEqual(parseStagesYaml("", "test"), null);
+  assert.strictEqual(parseStagesYaml("# just a comment\n", "test"), null);
+  assert.strictEqual(parseStagesYaml("workflow: foo\n", "test"), null, "No stages → null");
+});
+
+test("parseStagesYaml parses workflow + output_path + artifact_prefix", () => {
+  const yaml = `
+workflow: my_flow
+output_path: ./out
+artifact_prefix: issues
+stages:
+  - name: step1
+    agent: my-agent
+    outputs: []
+`;
+  const result = parseStagesYaml(yaml, "my-skill");
+  assert.ok(result, "Should return a blueprint");
+  assert.equal(result.workflow, "my_flow");
+  assert.equal(result.outputPath, "./out");
+  assert.equal(result.artifactPrefix, "issues");
+  assert.equal(result.skill, "my-skill");
+});
+
+test("parseStagesYaml collects outputs correctly", () => {
+  const yaml = `
+workflow: demo
+stages:
+  - name: intake
+    agent: uwf-sw_dev-intake
+    advances_phase_to: intake
+    outputs:
+      - "{{output_path}}/intake.md"
+      - "{{output_path}}/extra.md"
+    gated: true
+    gate:
+      checks:
+        - type: require_non_empty
+          path: "{{output_path}}/intake.md"
+          label: intake.md
+`;
+  const result = parseStagesYaml(yaml, "demo-skill");
+  assert.ok(result, "Should parse successfully");
+  const stage = result.stages[0];
+  assert.equal(stage.name, "intake");
+  assert.equal(stage.agent, "uwf-sw_dev-intake");
+  assert.equal(stage.advancesPhaseTo, "intake");
+  assert.deepEqual(stage.outputs, [
+    "{{output_path}}/intake.md",
+    "{{output_path}}/extra.md",
+  ], "outputs should contain exactly the declared file paths");
+});
+
+test("parseStagesYaml does NOT capture gate.checks items as outputs", () => {
+  const yaml = `
+workflow: demo
+stages:
+  - name: adr
+    agent: uwf-core-adr
+    outputs:
+      - "{{cwd}}/docs/adr/ADR-[0-9]*.md"
+    gate:
+      checks:
+        - type: require_files_with_prefix
+          dir: "{{cwd}}/docs/adr"
+          prefix: ADR-
+          label: ADR-*.md
+`;
+  const result = parseStagesYaml(yaml, "s");
+  const outputs = result.stages[0].outputs;
+  assert.equal(outputs.length, 1, "Should have exactly one output");
+  assert.equal(outputs[0], "{{cwd}}/docs/adr/ADR-[0-9]*.md");
+  for (const o of outputs) {
+    assert.ok(!o.startsWith("type:") && !o.startsWith("dir:") && !o.startsWith("prefix:") && !o.startsWith("label:"),
+      `Gate check property leaked into outputs: ${o}`);
+  }
+});
+
+test("parseStagesYaml handles empty outputs list", () => {
+  const yaml = `
+workflow: flow
+stages:
+  - name: impl
+    agent: uwf-issue-implementer
+    outputs: []
+    gate:
+      checks:
+        - type: require_non_empty
+          path: plan.md
+          label: plan.md
+`;
+  const result = parseStagesYaml(yaml, "s");
+  assert.deepEqual(result.stages[0].outputs, [], "Empty outputs should remain empty");
+});
+
+test("parseStagesYaml parses multiple stages independently", () => {
+  const yaml = `
+workflow: multi
+stages:
+  - name: alpha
+    agent: agent-a
+    outputs:
+      - "out/alpha.md"
+  - name: beta
+    agent: agent-b
+    outputs:
+      - "out/beta.md"
+      - "out/beta2.md"
+`;
+  const result = parseStagesYaml(yaml, "s");
+  assert.equal(result.stages.length, 2);
+  assert.deepEqual(result.stages[0].outputs, ["out/alpha.md"]);
+  assert.deepEqual(result.stages[1].outputs, ["out/beta.md", "out/beta2.md"]);
+});
+
+test("parseStagesYaml outputs from real sw_dev stages.yaml contain no gate check properties", () => {
+  const stagesFile = path.join(workspaceRoot, ".github", "skills", "uwf-sw_dev", "stages.yaml");
+  if (!fs.existsSync(stagesFile)) { return; }
+  const result = parseStagesYaml(fs.readFileSync(stagesFile, "utf8"), "uwf-sw_dev");
+  assert.ok(result, "sw_dev stages.yaml should parse successfully");
+  for (const stage of result.stages) {
+    for (const o of stage.outputs) {
+      assert.ok(
+        !o.startsWith("type:") && !o.startsWith("path:") && !o.startsWith("label:") && !o.startsWith("dir:") && !o.startsWith("prefix:") && !o.startsWith("text:"),
+        `Stage "${stage.name}" has a gate check property in outputs: "${o}"`,
+      );
+    }
+  }
+});
+
 // ── Declarative stage config sanity checks ────────────────────────────────
 
 test("declarative stages.yaml files declare workflow + stages", () => {

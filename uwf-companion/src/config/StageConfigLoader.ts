@@ -29,6 +29,7 @@ function parseStagesYaml(content: string, skill: string): WorkflowBlueprint | nu
 
   let current: StageBlueprint | null = null;
   let inOutputs = false;
+  let outputsIndent = 0;
 
   for (const rawLine of lines) {
     const indent = rawLine.match(/^\s*/)?.[0].length ?? 0;
@@ -66,7 +67,9 @@ function parseStagesYaml(content: string, skill: string): WorkflowBlueprint | nu
       continue;
     }
 
-    if (indent <= 2 && !trimmed.startsWith("-")) {
+    // Reset inOutputs when we return to the same indentation level as
+    // the `outputs:` key (i.e. a sibling key like `gate:` or `gated:`).
+    if (inOutputs && indent <= outputsIndent) {
       inOutputs = false;
     }
 
@@ -82,10 +85,14 @@ function parseStagesYaml(content: string, skill: string): WorkflowBlueprint | nu
 
     if (trimmed === "outputs:") {
       inOutputs = true;
+      outputsIndent = indent;
       continue;
     }
 
-    if (inOutputs && trimmed.startsWith("- ")) {
+    // Only collect list items that are at the direct child indentation of
+    // `outputs:` (outputsIndent + 2).  Deeper items (e.g. gate.checks
+    // entries) are intentionally excluded.
+    if (inOutputs && trimmed.startsWith("- ") && indent === outputsIndent + 2) {
       current.outputs.push(cleanValue(trimmed.slice(2)));
     }
   }

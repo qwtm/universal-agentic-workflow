@@ -5,10 +5,10 @@ import { PanelRegistry } from "./PanelRegistry";
 
 const TOP_ACTIONS = `
 <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:10px;">
-  <button data-command="uwf.openWorkflowState">Workflow State</button>
-  <button data-command="uwf.openStages">Stages</button>
-  <button data-command="uwf.openIssues">Issues</button>
-  <button data-command="uwf.openRequirements">Requirements</button>
+  <a class="btn" href="command:uwf.openWorkflowState">Workflow State</a>
+  <a class="btn" href="command:uwf.openStages">Stages</a>
+  <a class="btn" href="command:uwf.openIssues">Issues</a>
+  <a class="btn" href="command:uwf.openRequirements">Requirements</a>
 </div>`;
 
 const ALLOWED_WEBVIEW_COMMANDS = new Set<string>([
@@ -23,7 +23,7 @@ const EXTRA_STYLE = `
 .section { border:1px solid var(--vscode-panel-border,#444); border-radius:8px; padding:10px; margin-bottom:12px; }
 .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
 .section-header h3 { margin:0; font-size:13px; }
-button { background:var(--vscode-button-background); color:var(--vscode-button-foreground); border:0; border-radius:4px; padding:4px 8px; cursor:pointer; }
+.btn { display:inline-block; background:var(--vscode-button-background); color:var(--vscode-button-foreground); border:0; border-radius:4px; padding:4px 8px; cursor:pointer; text-decoration:none; font-size:12px; }
 .small { font-size:12px; opacity:.75; }
 ul { margin:4px 0 0 16px; }
 </style>`;
@@ -42,7 +42,7 @@ export class DashboardPanel {
       "uwf.dashboard",
       "UWF: Workflow Dashboard",
       vscode.ViewColumn.One,
-      { enableScripts: true, enableCommandUris: true, retainContextWhenHidden: true }
+      { enableScripts: false, enableCommandUris: true, retainContextWhenHidden: true }
     );
 
     DashboardPanel.panel.webview.onDidReceiveMessage((msg) => {
@@ -70,7 +70,7 @@ export class DashboardPanel {
       .join("");
 
     const plannedArtifacts = insights.artifactInsights.slice(0, 40).map((artifact) => {
-      const icon = artifact.exists ? "✅" : "⬜";
+      const icon = artifact.exists === null ? "🔷" : artifact.exists ? "✅" : "⬜";
       return `<li>${icon} <b>${escHtml(artifact.workflow)}</b> / ${escHtml(artifact.stage)} <span class="small">${escHtml(artifact.path)}</span></li>`;
     }).join("");
 
@@ -102,12 +102,6 @@ export class DashboardPanel {
         <ul>${plannedArtifacts || "<li>No artifact declarations found in stages.yaml files.</li>"}</ul>
       </div>
       ${workflowCards || '<p class="empty">No declarative stage archetypes found.</p>'}
-      <script>
-        const vscode = acquireVsCodeApi();
-        document.querySelectorAll('button[data-command]').forEach((btn) => {
-          btn.addEventListener('click', () => vscode.postMessage({ command: btn.dataset.command }));
-        });
-      </script>
     `);
 
     DashboardPanel.panel.webview.html = html;
