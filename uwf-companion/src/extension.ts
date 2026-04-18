@@ -23,14 +23,30 @@ export function activate(context: vscode.ExtensionContext) {
   const treeProvider = new WorkflowTreeProvider(workspaceRoot);
   const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
 
-  const refreshGlobalState = () => {
-    treeProvider.refresh();
-    PanelRegistry.refreshAll(workspaceRoot);
-    const insights = collectWorkflowInsights(workspaceRoot);
+  let insightsUpdateTimeout: NodeJS.Timeout | undefined;
+
+  const applyInsightsToStatusBar = (insights: ReturnType<typeof collectWorkflowInsights>) => {
     statusItem.text = `UWF: ${insights.currentWorkflow ?? "—"} › ${insights.currentPhase ?? "unknown"} (${insights.currentStatus ?? "idle"})`;
     statusItem.tooltip = "Open UWF workflow dashboard";
     statusItem.command = "uwf.openDashboard";
     statusItem.show();
+  };
+
+  const scheduleInsightsRefresh = () => {
+    if (insightsUpdateTimeout) {
+      clearTimeout(insightsUpdateTimeout);
+    }
+
+    insightsUpdateTimeout = setTimeout(() => {
+      const insights = collectWorkflowInsights(workspaceRoot);
+      applyInsightsToStatusBar(insights);
+    }, 300);
+  };
+
+  const refreshGlobalState = () => {
+    treeProvider.refresh();
+    PanelRegistry.refreshAll(workspaceRoot);
+    scheduleInsightsRefresh();
   };
 
   vscode.window.registerTreeDataProvider("uwf.workflowTree", treeProvider);
