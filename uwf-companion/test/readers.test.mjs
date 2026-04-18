@@ -12,16 +12,17 @@ import { DatabaseSync } from "node:sqlite";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, "..", "..");
 const issuesDb = path.join(workspaceRoot, ".github", "skills", "uwf-local-tracking", "uwf-issues.db");
+const hasIssuesDb = fs.existsSync(issuesDb);
 
 // ── DB smoke tests ─────────────────────────────────────────────────────────
 
 test("uwf-issues.db exists", (t) => {
-  if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
+  if (!hasIssuesDb) { t.skip("Seeded issues DB not present in this environment"); return; }
   assert.ok(fs.existsSync(issuesDb), `Expected DB at ${issuesDb}`);
 });
 
 test("issues table has correct schema columns", (t) => {
-  if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
+  if (!hasIssuesDb) { t.skip("Seeded issues DB not present in this environment"); return; }
   const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const cols = db.prepare("PRAGMA table_info(issues)").all().map((r) => r.name);
@@ -34,7 +35,7 @@ test("issues table has correct schema columns", (t) => {
 });
 
 test("issues table contains 9 seeded issues", (t) => {
-  if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
+  if (!hasIssuesDb) { t.skip("Seeded issues DB not present in this environment"); return; }
   const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const { n } = db.prepare("SELECT COUNT(*) as n FROM issues").get();
@@ -45,7 +46,7 @@ test("issues table contains 9 seeded issues", (t) => {
 });
 
 test("I-003 depends_on contains I-001 and I-002", (t) => {
-  if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
+  if (!hasIssuesDb) { t.skip("Seeded issues DB not present in this environment"); return; }
   const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const row = db.prepare("SELECT depends_on FROM issues WHERE id = 'I-003'").get();
@@ -59,7 +60,7 @@ test("I-003 depends_on contains I-001 and I-002", (t) => {
 });
 
 test("closed issues have status=closed", (t) => {
-  if (!fs.existsSync(issuesDb)) { t.skip("Seeded issues DB not present in this environment"); return; }
+  if (!hasIssuesDb) { t.skip("Seeded issues DB not present in this environment"); return; }
   const db = new DatabaseSync(issuesDb, { open: true, readOnly: true });
   try {
     const closed = db.prepare("SELECT id FROM issues WHERE status = 'closed'").all();
@@ -326,8 +327,9 @@ test("parseStagesYaml outputs from real sw_dev stages.yaml contain no gate check
 
 // ── Declarative stage config sanity checks ────────────────────────────────
 
-test("declarative stages.yaml files declare workflow + stages", () => {
+test("declarative stages.yaml files declare workflow + stages", (t) => {
   const skillsRoot = path.join(workspaceRoot, ".github", "skills");
+  if (!fs.existsSync(skillsRoot)) { t.skip("Skills directory not present in this environment"); return; }
   const stageFiles = fs.readdirSync(skillsRoot, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => path.join(skillsRoot, d.name, "stages.yaml"))
@@ -344,6 +346,7 @@ test("declarative stages.yaml files declare workflow + stages", () => {
 
 test("stage_runs rows reference workflows that exist in declarative configs", (t) => {
   const skillsRoot = path.join(workspaceRoot, ".github", "skills");
+  if (!fs.existsSync(skillsRoot)) { t.skip("Skills directory not present in this environment"); return; }
   const declared = new Set();
 
   for (const dirent of fs.readdirSync(skillsRoot, { withFileTypes: true })) {

@@ -6,10 +6,11 @@
 
 The extension now includes a production workflow dashboard and deeper integration with declarative stage archetypes:
 
-- A primary **Workflow Dashboard** webview aggregates state, stage execution, archetypes, and declared-vs-observed artifacts.
+- A primary **Workflow Dashboard** webview aggregates state, stage execution, archetypes, and declared-vs-observed artifacts. A companion `WorkflowDashboardPanel` provides a multi-panel view with per-section interactive drill-down (`openDashboardSection`).
 - Sidebar now surfaces **Archetypes** and **Artifacts** counters driven from `.github/skills/*/stages.yaml`.
 - Every data panel includes a top-right **Open interactive view** action to jump back to the dashboard for cross-workflow control/insight.
 - A status bar indicator reflects the live workflow/phase/status for always-on situational awareness.
+- Declarative workflow configuration is read from `stages.yaml` (archetype, stage agent mapping, and planned outputs).
 
 These changes preserve the read-only DB guarantee and keep workflow execution ownership in skill scripts.
 

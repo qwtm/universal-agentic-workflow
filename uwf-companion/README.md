@@ -6,7 +6,7 @@ Live data from [Universal Agent Workflow](../) SQLite skill databases, surfaced 
 
 | Command | Description |
 |---|---|
-| `UWF: Open Workflow Dashboard` | Multi-panel operational dashboard with live workflow phase/status, archetype declarations, stage execution summary, and artifact visibility |
+| `UWF: Open Workflow Dashboard` | Multi-panel workflow insight view (state, stages, planned artifacts, issues, requirements, discoveries) with per-section interactive drill-down buttons |
 | `UWF: Open Workflow State` | Current workflow phase/status/agent and phase history timeline |
 | `UWF: Open Stages` | Webview table of all workflow stages and their status |
 | `UWF: Open Issues` | Webview table of all issues with milestone/sprint/status |
@@ -17,9 +17,11 @@ Live data from [Universal Agent Workflow](../) SQLite skill databases, surfaced 
 | `UWF: Export Report (CSV/JSON)` | Export a snapshot of all databases to `tmp/reports/` |
 | `UWF: Refresh All` | Manually refresh the sidebar tree and panels |
 
-The Activity Bar sidebar ("UWF Companion") shows live workflow state, archetype count, planned artifact count, open issues, and active stages. All panels auto-refresh within **300 ms** of any database write.
+The Activity Bar sidebar ("UWF Companion") shows live workflow state, archetype count, planned artifact count, open issues, and active stages. The dashboard provides a multi-panel summary with each section having an **Open interactive view ↗** action for deeper inspection. All panels auto-refresh within **300 ms** of any database write.
 
-Each panel now includes an **Open interactive view** action in the top-right that jumps to the primary Workflow Dashboard webview for richer cross-panel insight.
+### Declarative configuration
+
+The dashboard reads workflow archetype/stage/artifact expectations from declarative stage configs (`stages.yaml`) under `.github/skills/...`.
 
 ## Requirements
 
@@ -66,6 +68,8 @@ src/
     DashboardPanel.ts          — Webview: primary multi-panel workflow dashboard
     WorkflowInsights.ts        — live DB + declarative config aggregation
     WorkflowStatePanel.ts      — Webview: workflow state and phase history
+    WorkflowDashboardPanel.ts  — Alternative dashboard with interactive per-section drill-down
+    WorkflowSectionPanel.ts    — Interactive drill-down webview opened per dashboard section
     StagesPanel.ts             — Webview: stage status table
     IssuesPanel.ts             — Webview: issues backlog table
     RequirementsPanel.ts       — Webview: requirements
@@ -77,6 +81,8 @@ src/
   reporter/
     ReportBuilder.ts           — CSV/JSON export of all DB snapshots
     InterviewerBridge.ts       — Future: launch uwf-interviewer agent
+  services/
+    WorkflowInsightsService.ts  — Aggregates DB + declarative stages.yaml insights
   db/readers/
     BaseReader.ts              — Read-only node:sqlite wrapper base class
     IssuesReader.ts            — uwf-issues.db

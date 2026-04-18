@@ -73,6 +73,16 @@
           "icon": "$(database)"
         }
       ]
+    },
+    "configuration": {
+      "title": "UWF Companion",
+      "properties": {
+        "uwf.workflowStagesPath": {
+          "type": "string",
+          "default": ".github/skills/uwf-sw_dev/stages.yaml",
+          "description": "Relative path to declarative workflow stage config used for dashboard archetype/artifact planning insights."
+        }
+      }
     }
   },
   "scripts": {
@@ -80,7 +90,7 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "package": "vsce package",
-    "test": "node --test test/**/*.test.mjs"
+    "test": "npm run build && node --test test/**/*.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",

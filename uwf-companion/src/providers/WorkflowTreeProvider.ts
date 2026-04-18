@@ -130,6 +130,13 @@ export class WorkflowTreeProvider
       }
     }
 
+    items.push(new WorkflowTreeItem(
+      "Workflow Dashboard",
+      vscode.TreeItemCollapsibleState.None,
+      "multi-panel insights",
+      { command: "uwf.openDashboard", title: "Open Workflow Dashboard", arguments: [] }
+    ));
+
     items.push(
       new WorkflowTreeItem("Requirements", vscode.TreeItemCollapsibleState.None, undefined, {
         command: "uwf.openRequirements", title: "Open Requirements", arguments: [],
