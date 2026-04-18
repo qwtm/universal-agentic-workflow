@@ -11,6 +11,13 @@ const TOP_ACTIONS = `
   <button data-command="uwf.openRequirements">Requirements</button>
 </div>`;
 
+const ALLOWED_WEBVIEW_COMMANDS = new Set<string>([
+  "uwf.openWorkflowState",
+  "uwf.openStages",
+  "uwf.openIssues",
+  "uwf.openRequirements",
+]);
+
 const EXTRA_STYLE = `
 <style>
 .section { border:1px solid var(--vscode-panel-border,#444); border-radius:8px; padding:10px; margin-bottom:12px; }
@@ -39,8 +46,9 @@ export class DashboardPanel {
     );
 
     DashboardPanel.panel.webview.onDidReceiveMessage((msg) => {
-      if (msg?.command) {
-        void vscode.commands.executeCommand(msg.command);
+      const command = msg?.command;
+      if (typeof command === "string" && ALLOWED_WEBVIEW_COMMANDS.has(command)) {
+        void vscode.commands.executeCommand(command);
       }
     }, undefined, context.subscriptions);
 
