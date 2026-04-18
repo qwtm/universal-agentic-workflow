@@ -20,7 +20,7 @@ export class WorkflowSectionPanel {
       `uwf.section.${sectionId}`,
       `UWF: ${def.title} (Interactive)`,
       vscode.ViewColumn.Active,
-      { enableScripts: true, retainContextWhenHidden: true }
+      { enableScripts: false, retainContextWhenHidden: true }
     );
 
     const snapshot = WorkflowInsightsService.collect(workspaceRoot);
