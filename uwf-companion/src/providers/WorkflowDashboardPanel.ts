@@ -25,6 +25,8 @@ export class WorkflowDashboardPanel {
         vscode.commands.executeCommand("uwf.openDashboardSection", msg.sectionId);
       }
       if (msg?.type === "refresh") {
+        // Refresh the dashboard panel itself, in addition to the global refresh command.
+        WorkflowDashboardPanel.refresh(workspaceRoot);
         vscode.commands.executeCommand("uwf.refreshAll");
       }
     }, null, context.subscriptions);
