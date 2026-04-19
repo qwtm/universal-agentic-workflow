@@ -1,0 +1,32 @@
+stage_type: intake
+version: 1
+default_agent: uwf-stage-intake
+supported_traits:
+  - project_manager
+  - sw_dev
+required_context:
+  - workflow
+  - role
+  - phase
+  - outputPath
+  - statePath
+  - stage_type
+  - trait_ids
+  - model_profile
+  - behavior_policy
+  - steering_policy
+  - inputs
+  - outputs
+default_behavior_policy:
+  priority_order:
+    - goal_clarity
+    - constraints
+    - assumptions
+  must_address:
+    - goal
+    - constraints
+    - assumptions
+  question_policy: standard
+  risk_focus: []
+  evidence_threshold: standard
+merge_strategy: ordered_union

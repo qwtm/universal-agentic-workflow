@@ -66,7 +66,7 @@ console.log("\nTest suite: stage-tracker.mjs / --list-stages\n");
   assert("exits 0", r.ok, r.output + r.stderr);
   assert("stage_type = discovery", disc?.stage_type === "discovery");
   assert("trait_ids = [project_manager]", JSON.stringify(disc?.trait_ids) === '["project_manager"]');
-  assert("resolved_agent = uwf-core-discovery", disc?.resolved_agent === "uwf-core-discovery");
+  assert("resolved_agent = uwf-stage-discovery", disc?.resolved_agent === "uwf-stage-discovery");
   assert("behavior_policy present", typeof disc?.behavior_policy === "object" && disc.behavior_policy !== null);
   assert("steering_policy present", typeof disc?.steering_policy === "object" && disc.steering_policy !== null);
   assert("model_profile = balanced (default)", disc?.model_profile === "balanced");
@@ -87,18 +87,18 @@ console.log("\nTest suite: stage-tracker.mjs / --list-stages\n");
   assert("risk_focus includes technical", disc?.behavior_policy?.risk_focus?.includes("technical"));
 }
 
-// 3. Legacy stages remain backward compatible
+// 3. Intake is now a canonical stage (stage_type: intake)
 {
-  console.log("3. project_manager intake → legacy stage (agent field)");
+  console.log("3. project_manager intake → canonical stage (stage_type: intake)");
   const r = run(["list-stages", "--workflow", "project_manager"]);
   const stages = parseOutput(r);
   const intake = stages?.find((s) => s.name === "intake");
   assert("exits 0", r.ok);
-  assert("agent = uwf-project_manager-intake", intake?.agent === "uwf-project_manager-intake");
-  assert("stage_type = null", intake?.stage_type === null);
-  assert("trait_ids = []", JSON.stringify(intake?.trait_ids) === "[]");
-  assert("behavior_policy = null", intake?.behavior_policy === null);
-  assert("steering_policy = null", intake?.steering_policy === null);
+  assert("resolved_agent = uwf-stage-intake", intake?.resolved_agent === "uwf-stage-intake");
+  assert("stage_type = intake", intake?.stage_type === "intake");
+  assert("trait_ids = [project_manager]", JSON.stringify(intake?.trait_ids) === '["project_manager"]');
+  assert("behavior_policy present", typeof intake?.behavior_policy === "object" && intake.behavior_policy !== null);
+  assert("steering_policy present", typeof intake?.steering_policy === "object" && intake.steering_policy !== null);
 }
 
 // 4. --model-profile flag propagates to new-style stages
@@ -145,7 +145,7 @@ artifact_prefix: test
 output_path: ./tmp/workflow-artifacts
 stages:
   - name: conflicting
-    agent: uwf-core-discovery
+    agent: uwf-test-any-agent
     stage_type: discovery
     traits:
       - project_manager

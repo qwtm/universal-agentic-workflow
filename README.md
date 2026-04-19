@@ -20,7 +20,7 @@ The `uwf-core-orchestrator` agent runs the full stage sequence end-to-end withou
 
 You control stage sequencing manually by invoking individual stage agents on demand. This is useful when you want to inspect and edit artifacts between stages, run only selected stages, or integrate UWF into an existing workflow.
 
-**Trigger:** Invoke any stage agent directly from the Copilot chat panel (e.g. `@uwf-sw_dev-intake`, `@uwf-core-discovery`).
+**Trigger:** Use `uwf-core-orchestrator` as the stable entry point and pass the workflow name as an argument.
 
 ---
 
@@ -63,10 +63,10 @@ Provide the repository path or URL when prompted. See [Brownfield Projects](#bro
 
 ```
 .github/
-├── agents/               # Stage agents (uwf-{role}-{job}.agent.md)
+├── agents/               # Stage agents (uwf-stage-{stage}.agent.md for canonical stages; uwf-core-* for infrastructure; uwf-{role}-{job}.agent.md for legacy workflow-specific stages)
 ├── skills/               # Swappable behavior modules (uwf-{name}/SKILL.md + scripts)
 │   ├── uwf-orchestration-engine/   # Core engine: gate enforcement, stage loop, runSubagent contract
-│   │   └── stage-contracts/        # Canonical stage capability contracts (discovery.yaml, …)
+│   │   └── stage-contracts/        # Canonical stage capability contracts (intake.yaml, discovery.yaml, …)
 │   ├── uwf-sw_dev/                 # Persona: software developer workflow (stages.yaml + run.mjs)
 │   ├── uwf-project_manager/        # Persona: project manager workflow (stages.yaml + run.mjs)
 │   ├── uwf-solutions_architect/    # Persona: solutions architect workflow & archetype (stages.yaml + run.mjs)
@@ -113,18 +113,32 @@ uwf-companion/            # VS Code extension — live UWF dashboard (see below)
 
 ## Agent Bundles (`.github/agents`)
 
-Agents follow the naming convention `uwf-{role}-{job}.agent.md`. The single orchestrator (`uwf-core-orchestrator`) coordinates all stage agents; the stage agents are not invoked directly in autonomous mode.
+Agents follow two naming conventions:
+
+- **Canonical stage agents** (`uwf-stage-{stage}.agent.md`) — stages that have been migrated to the `stage_type` capability architecture. Behavioral differences are provided by traits; the agent is shared across all workflows.
+- **Infrastructure agents** (`uwf-core-{name}.agent.md`) — agents that handle cross-cutting concerns (orchestration, tracking, acceptance, snapshot, etc.).
+- **Legacy workflow-specific stage agents** (`uwf-{role}-{job}.agent.md`) — stages not yet migrated to the canonical `stage_type` architecture. These keep their current names until their own migration.
+
+The single orchestrator (`uwf-core-orchestrator`) coordinates all stage agents; stage agents are not invoked directly in autonomous mode.
+
+### Canonical Stage Agents — `uwf-stage-*`
+
+Canonical stage agents serve all workflows; trait YAML files supply the behavioral variation.
+
+| Agent file | Responsibility |
+| :--- | :--- |
+| `uwf-stage-intake.agent.md` | Captures goal, constraints, and scope for the active workflow. Writes the intake artifact to `outputs[0]`. Trait determines the required sections and question policy. |
+| `uwf-stage-discovery.agent.md` | Inspects the workspace to identify unknowns and constraints without making implementation changes. Writes discovery artifact to `outputs[0]`. |
 
 ### Core Bundle — `uwf-core-*`
 
-Generic agents reusable by any orchestrator, regardless of workflow persona.
+Infrastructure agents reusable by any orchestrator, regardless of workflow persona.
 
 | Agent file | Responsibility |
 | :--- | :--- |
 | `uwf-core-acceptance.agent.md` | Runs final acceptance checks, verifies commands, and documents known issues before closing work. |
 | `uwf-core-adr.agent.md` | Produces Architecture Decision Records via the `uwf-adr` skill (300-point checklist). |
 | `uwf-core-blueprint.agent.md` | Synthesizes all Phase 1 outputs into the Canonical Build Spec (uwf-cbs) and initializes the Build Record (uwf-br) strata 0–4. Final Phase 1 stage. |
-| `uwf-core-discovery.agent.md` | Inspects the workspace to identify unknowns and constraints without making implementation changes. |
 | `uwf-core-project-tracking.agent.md` | Manages workflow state transitions using whichever tracking skill is configured. |
 | `uwf-core-refinement.agent.md` | Grooms user stories to production-ready standard: field completeness gate, nine quality controls, and brownfield confidence-promotion logic. |
 | `uwf-core-requirements.agent.md` | Writes PRDs, Non-Functional Requirements, and testable acceptance criteria. |
@@ -141,7 +155,6 @@ Drives individual work items (issues) from intake through implementation, review
 
 | Agent file | Responsibility |
 | :--- | :--- |
-| `uwf-sw_dev-intake.agent.md` | Scopes a single work item: goal, acceptance criteria, constraints, and explicit out-of-scope boundaries. |
 | `uwf-sw_dev-work-planner.agent.md` | Assembles upstream artifacts (tests, security controls, scope) into an ordered implementation plan. |
 | `uwf-issue-implementer.agent.md` | Executes code and infrastructure changes strictly against the approved plan and ADRs. |
 | `uwf-sw_dev-reviewer.agent.md` | Evaluates implementation quality, test coverage, and security controls. Produces a fix list or hands off to acceptance. Loads `uwf-reviewer` with `Persona: dev`. |
@@ -152,7 +165,6 @@ Macro-level work: scoping a new effort, building a roadmap, and scaffolding the 
 
 | Agent file | Responsibility |
 | :--- | :--- |
-| `uwf-project_manager-intake.agent.md` | Captures objectives, non-goals, stakeholders, success metrics, and the intended work-breakdown strategy. |
 | `uwf-project_manager-timeline-planner.agent.md` | Translates the project scope into a milestone/sprint/issue roadmap and creates the issues backlog. |
 | `uwf-project_manager-reviewer.agent.md` | Audits the macro plan for completeness, feasibility, and consistency. Loads `uwf-reviewer` with `Persona: pm`. |
 
@@ -270,7 +282,7 @@ architecture. Each uses `stage_type: discovery` with the appropriate trait:
 ```
 
 The orchestrator resolves the full `behavior_policy` and `steering_policy` at list-stages time
-and injects them into the `uwf-core-discovery` invocation context. All other stages remain
+and injects them into the `uwf-stage-discovery` and `uwf-stage-intake` invocation context. All other stages remain
 unmodified legacy `agent:` stages.
 
 ### Stage Entry Rules

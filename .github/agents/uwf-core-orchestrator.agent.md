@@ -10,7 +10,8 @@ tools:
 user-invokable: true
 argument-hint: "workflow (required): name of the persona skill to load (e.g. project_manager, sw_dev, book_writer). Optional: --profile <compact|balanced|reasoning> or --model <model_name>"
 agents:
-  - uwf-core-discovery
+  - uwf-stage-intake
+  - uwf-stage-discovery
   - uwf-core-requirements
   - uwf-core-adr
   - uwf-core-risk-planner
@@ -22,10 +23,8 @@ agents:
   - uwf-core-snapshot
   - uwf-core-retro
   - uwf-core-technical-writer
-  - uwf-project_manager-intake
   - uwf-project_manager-timeline-planner
   - uwf-project_manager-reviewer
-  - uwf-sw_dev-intake
   - uwf-sw_dev-work-planner
   - uwf-sw_dev-reviewer
   - uwf-issue-implementer

@@ -5,3 +5,6 @@ node_modules/
 coverage/
 tmp/
 *.db
+*.db-shm
+*.db-wal
+package-lock.json

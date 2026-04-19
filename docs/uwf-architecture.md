@@ -120,8 +120,8 @@ Every workflow begins here. For greenfield projects, Phase 1 starts from scratch
 
 | Stage | Agent | Purpose |
 |---|---|---|
-| **Intake** | Persona-specific intake agent (e.g. `uwf-sw_dev-intake`, `uwf-project_manager-intake`, `uwf-solutions_architect-design-planner`) | Parse the request. Classify scope. Identify actors, constraints, and initial domain terms. |
-| **Discovery** | `uwf-core-discovery` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. |
+| **Intake** | `uwf-stage-intake` (trait determines behavior: `project_manager`, `sw_dev`; or `uwf-solutions_architect-design-planner` for architecture engagements) | Parse the request. Classify scope. Identify actors, constraints, and initial domain terms. |
+| **Discovery** | `uwf-stage-discovery` | Audit the existing codebase/project state. Enumerate what exists, what's missing, and what's stale. |
 | **Requirements** | `uwf-core-requirements` | Elicit and structure functional + non-functional requirements. Output structured user stories. |
 | **ADR** | `uwf-core-adr` | *(Conditional)* Capture architectural decisions using the `uwf-adr` skill. Conditional on requirements flagging `ADR:` items. |
 | **Risk Planner** | `uwf-core-risk-planner` | Identify and document project-level execution risks: schedule, dependency, technical-debt, and external. Produce a risk register. Appends to `uwf-br` layer 1; flags blocking dependency risks in layer 2. |
@@ -150,7 +150,7 @@ When `forensic-br.json` is present (brownfield mode), each Phase 1 stage applies
 
 | Stage | Agent | Skill (persona) | Purpose |
 |---|---|---|---|
-| **Intake (PM)** | `uwf-project_manager-intake` | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
+| **Intake (PM)** | `uwf-stage-intake` (trait: `project_manager`) | — | Refine scope into milestones, epics, and delivery phases. Stakeholder mapping. |
 | **Timeline Planner** | `uwf-project_manager-timeline-planner` | — | Sequence milestones. Identify critical path, parallel workstreams, and dependency chains. Produce sprint/roadmap artifact and issues backlog. |
 | **Reviewer** | `uwf-project_manager-reviewer` | `uwf-reviewer` (`Persona: pm`) | Validate plan completeness: timeline feasibility, stakeholder coverage, risk alignment, scope integrity, and blockers. |
 
@@ -158,7 +158,7 @@ When `forensic-br.json` is present (brownfield mode), each Phase 1 stage applies
 
 | Stage | Agent | Skill (persona) | Purpose |
 |---|---|---|---|
-| **Intake (SWE)** | `uwf-sw_dev-intake` | — | Scope the active issue: goal, acceptance criteria, constraints, and explicit out-of-scope boundaries. |
+| **Intake (SWE)** | `uwf-stage-intake` (trait: `sw_dev`) | — | Scope the active issue: goal, acceptance criteria, constraints, and explicit out-of-scope boundaries. |
 | **Work Planner** | `uwf-sw_dev-work-planner` | — | Sequence implementation tasks. Identify build order, test-first candidates, and integration points. |
 | **Implementer** | `uwf-issue-implementer` | — | Execute code and infrastructure changes strictly against the approved plan and ADRs. |
 | **Reviewer** | `uwf-sw_dev-reviewer` | `uwf-reviewer` (`Persona: dev`) | Implementation review gate: correctness, dependency ordering, coverage completeness, story quality, and test alignment. |
@@ -292,12 +292,13 @@ The actual layout of the repository as shipped:
 universal-agentic-workflow/
 ├── .github/
 │   ├── copilot-instructions.md                  # Always-on orchestration rules
-│   ├── agents/                                  # Stage agents (uwf-{role}-{job}.agent.md)
+│   ├── agents/                                  # Stage agents (uwf-stage-* for canonical; uwf-core-* for infrastructure; uwf-{role}-{job}.agent.md for legacy workflow-specific)
 │   │   ├── uwf-core-orchestrator.agent.md       # Single orchestrator entry point
+│   │   ├── uwf-stage-intake.agent.md            # Canonical Phase 1: intake (trait-driven)
+│   │   ├── uwf-stage-discovery.agent.md         # Canonical Phase 1: workspace discovery
 │   │   ├── uwf-core-acceptance.agent.md         # Phase 3: acceptance gate
 │   │   ├── uwf-core-adr.agent.md                # Phase 1: architectural decisions
 │   │   ├── uwf-core-blueprint.agent.md          # Phase 1: blueprint + uwf-cbs init
-│   │   ├── uwf-core-discovery.agent.md          # Phase 1: workspace discovery
 │   │   ├── uwf-core-project-tracking.agent.md  # State management / phase transitions
 │   │   ├── uwf-core-refinement.agent.md         # Phase 3: story quality gate
 │   │   ├── uwf-core-requirements.agent.md       # Phase 1: requirements
@@ -307,11 +308,9 @@ universal-agentic-workflow/
 │   │   ├── uwf-core-snapshot.agent.md           # Phase 3: uwf-drs producer
 │   │   ├── uwf-core-technical-writer.agent.md   # Phase 3: docs update
 │   │   ├── uwf-core-test-planner.agent.md       # Phase 1: test strategy
-│   │   ├── uwf-sw_dev-intake.agent.md           # sw_dev Phase 1: issue intake
 │   │   ├── uwf-sw_dev-work-planner.agent.md     # sw_dev Phase 2: work plan
 │   │   ├── uwf-sw_dev-reviewer.agent.md         # sw_dev Phase 2: review gate
 │   │   ├── uwf-issue-implementer.agent.md       # sw_dev Phase 2: implementation
-│   │   ├── uwf-project_manager-intake.agent.md  # pm Phase 1: project intake
 │   │   ├── uwf-project_manager-timeline-planner.agent.md  # pm Phase 2: roadmap
 │   │   ├── uwf-project_manager-reviewer.agent.md          # pm Phase 2: review gate
 │   │   ├── uwf-solutions_architect-design-planner.agent.md  # sa Phase 1+2: SDD

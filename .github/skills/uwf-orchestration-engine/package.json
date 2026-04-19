@@ -1,0 +1,10 @@
+{
+  "name": "uwf-orchestration-engine",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "UWF Orchestration Engine — stage tracking and gate enforcement utilities",
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "js-yaml": "^4.1.0"
+  }
+}
